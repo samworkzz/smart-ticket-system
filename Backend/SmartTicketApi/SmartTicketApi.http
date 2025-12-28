@@ -1,0 +1,6 @@
+@SmartTicketApi_HostAddress = http://localhost:5125
+
+GET {{SmartTicketApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
