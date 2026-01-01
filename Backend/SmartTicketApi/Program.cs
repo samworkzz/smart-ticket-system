@@ -1,41 +1,227 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using SmartTicketApi.Data;
+using SmartTicketApi.Models.Entities;
+using SmartTicketApi.Services.Auth;
+using SmartTicketApi.Services.TicketComments;
+using SmartTicketApi.Services.Tickets;
+using System.Text;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// Controllers
+builder.Services.AddControllers();
+
+// DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
+
+// Authentication (JWT)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+        )
+    };
+});
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// Application Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
+
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+//CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
+// MIDDLEWARE PIPELINE
+
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseRouting();
 
-app.MapGet("/weatherforecast", () =>
+app.UseCors("AllowAngularApp");
+
+
+// Security middleware
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+
+// SEED ROLES 
+
+using (var scope = app.Services.CreateScope())
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.Roles.Any())
+    {
+        context.Roles.AddRange(
+            new Role { RoleName = "Admin" },
+            new Role { RoleName = "SupportManager" },
+            new Role { RoleName = "SupportAgent" },
+            new Role { RoleName = "EndUser" }
+        );
+
+        context.SaveChanges();
+    }
+}
+
+//SEEDING TICKET STATUS
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.TicketStatuses.Any())
+    {
+        context.TicketStatuses.AddRange(
+            new TicketStatus { StatusName = "Created" },
+            new TicketStatus { StatusName = "Assigned" },
+            new TicketStatus { StatusName = "In Progress" },
+            new TicketStatus { StatusName = "Resolved" },
+            new TicketStatus { StatusName = "Closed" }
+        );
+
+        context.SaveChanges();
+    }
+}
+
+//SEEDING TICKET PRIORITIES
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.TicketPriorities.Any())
+    {
+        context.TicketPriorities.AddRange(
+            new TicketPriority { PriorityName = "Low" },
+            new TicketPriority { PriorityName = "Medium" },
+            new TicketPriority { PriorityName = "High" }
+        );
+
+        context.SaveChanges();
+    }
+}
+
+//SEED TICKET CATEGORIES
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.TicketCategories.Any())
+    {
+        context.TicketCategories.AddRange(
+            new TicketCategory { CategoryName = "Software" },
+            new TicketCategory { CategoryName = "Hardware" },
+            new TicketCategory { CategoryName = "Network" }
+        );
+
+        context.SaveChanges();
+    }
+}
+//SEED SLA DATA
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.SLAs.Any())
+    {
+        var low = context.TicketPriorities.First(p => p.PriorityName == "Low");
+        var medium = context.TicketPriorities.First(p => p.PriorityName == "Medium");
+        var high = context.TicketPriorities.First(p => p.PriorityName == "High");
+
+        context.SLAs.AddRange(
+            new SLA { TicketPriorityId = low.TicketPriorityId, ResponseHours = 48 },
+            new SLA { TicketPriorityId = medium.TicketPriorityId, ResponseHours = 24 },
+            new SLA { TicketPriorityId = high.TicketPriorityId, ResponseHours = 4 }
+        );
+
+        context.SaveChanges();
+    }
+}
+
+//SEED USERS
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var passwordHasher = new PasswordHasher<User>();
+
+    void SeedUser(string name, string email, string roleName)
+    {
+        if (context.Users.Any(u => u.Email == email))
+            return;
+
+        var role = context.Roles.First(r => r.RoleName == roleName);
+
+        var user = new User
+        {
+            Name = name,
+            Email = email,
+            RoleId = role.RoleId
+        };
+
+        user.PasswordHash = passwordHasher.HashPassword(user, "Password@123");
+
+        context.Users.Add(user);
+        context.SaveChanges();
+    }
+
+    SeedUser("System Admin", "admin@system.com", "Admin");
+    SeedUser("Support Manager", "manager@system.com", "SupportManager");
+    SeedUser("Support Agent", "agent@system.com", "SupportAgent");
+}
+
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

@@ -1,0 +1,43 @@
+<h3>Create Ticket</h3>
+
+<form (ngSubmit)="submit()">
+
+  <div>
+    <label>Title</label>
+    <input type="text" [(ngModel)]="title" name="title" required />
+  </div>
+
+  <div>
+    <label>Description</label>
+    <textarea [(ngModel)]="description" name="description" required></textarea>
+  </div>
+
+  <div>
+    <label>Category</label>
+    <select [(ngModel)]="ticketCategoryId" name="category">
+      <option [value]="1">Software</option>
+      <option [value]="2">Hardware</option>
+      <option [value]="3">Network</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Priority</label>
+    <select [(ngModel)]="ticketPriorityId" name="priority">
+      <option [value]="1">Low</option>
+      <option [value]="2">Medium</option>
+      <option [value]="3">High</option>
+    </select>
+  </div>
+
+  <button type="submit">Submit Ticket</button>
+
+</form>
+
+<p *ngIf="successMessage" style="color: green">
+  {{ successMessage }}
+</p>
+
+<p *ngIf="errorMessage" style="color: red">
+  {{ errorMessage }}
+</p>
