@@ -14,4 +14,17 @@ export class TicketService {
   createTicket(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, data);
   }
+
+  assignTicket(ticketId: number, assignedToUserId: number) {
+    return this.http.put(`${this.apiUrl}/assign`, {
+      ticketId,
+      assignedToUserId
+    });
+  }
+  updateStatus(ticketId: number, ticketStatusId: number) {
+    return this.http.put(`${this.apiUrl}/status`, {
+      ticketId,
+      ticketStatusId
+    });
+  }
 }

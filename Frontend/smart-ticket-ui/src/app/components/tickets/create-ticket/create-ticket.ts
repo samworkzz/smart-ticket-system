@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketService } from '../../../services/ticket.service.ts';
+import { NavbarComponent } from '../../../shared/navbar/navbar.js';
 
 @Component({
   selector: 'app-create-ticket',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   templateUrl: './create-ticket.html'
 })
 export class CreateTicketComponent {

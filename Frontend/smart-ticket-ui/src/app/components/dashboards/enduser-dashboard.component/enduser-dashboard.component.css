@@ -1,0 +1,5 @@
+.dashboard-wrapper {
+  background-color: #f5f7fb;
+  min-height: calc(100vh - 64px);
+  padding: 40px;
+}

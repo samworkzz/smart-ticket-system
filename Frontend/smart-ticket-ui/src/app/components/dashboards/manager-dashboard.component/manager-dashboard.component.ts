@@ -1,18 +1,15 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NavbarComponent } from '../../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-manager-dashboard',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <h2>Support Manager Dashboard</h2>
-    <p>You can assign and monitor tickets.</p>
-
-    <button (click)="logout()">Logout</button>
-  `
+  imports: [CommonModule, NavbarComponent],
+  templateUrl:'manager-dashboard.component.html',
+  styleUrl:'manager-dashboard.component.css'
 })
 export class ManagerDashboardComponent {
   constructor(

@@ -2,19 +2,21 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NavbarComponent } from '../../../shared/navbar/navbar';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-enduser-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
-  template: `
-    <h2>End User Dashboard</h2>
-
-    <a routerLink="/enduser/create-ticket">Create Ticket</a>
-
-    <button (click)="logout()">Logout</button>
-
-  `
+  imports: [
+  CommonModule,
+  NavbarComponent,
+  MatCardModule,
+  MatButtonModule
+],
+  templateUrl: 'enduser-dashboard.component.html',
+  styleUrl:'enduser-dashboard.component.css'
 })
 export class EnduserDashboardComponent {
   constructor(

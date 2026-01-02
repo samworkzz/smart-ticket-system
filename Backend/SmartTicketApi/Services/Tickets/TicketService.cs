@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartTicketApi.Data;
+using SmartTicketApi.Models.DTOs;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Models.Entities;
 
@@ -45,6 +46,29 @@ namespace SmartTicketApi.Services.Tickets
 
             return ticket.TicketId;
         }
+        //End User get ticket
+        public async Task<IEnumerable<TicketListDto>> GetTicketsForEndUserAsync(int userId)
+        {
+            return await _context.Tickets
+                .AsNoTracking()
+                .Where(t => t.CreatedById == userId)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketCategory)
+                .Include(t => t.AssignedTo)
+                .Select(t => new TicketListDto
+                {
+                    TicketId = t.TicketId,
+                    Title = t.Title,
+                    Status = t.TicketStatus.StatusName,
+                    Priority = t.TicketPriority.PriorityName,
+                    Category = t.TicketCategory.CategoryName,
+                    CreatedAt = t.CreatedAt,
+                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null
+                })
+                .ToListAsync();
+        }
+
 
         // SupportManager: Assign Ticket
 
@@ -74,6 +98,27 @@ namespace SmartTicketApi.Services.Tickets
                 $"AssignedToUserId={dto.AssignedToUserId}"
             );
         }
+        //support manager get all tickets
+        public async Task<IEnumerable<TicketListDto>> GetAllTicketsAsync()
+        {
+            return await _context.Tickets
+                .AsNoTracking()
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketCategory)
+                .Include(t => t.AssignedTo)
+                .Select(t => new TicketListDto
+                {
+                    TicketId = t.TicketId,
+                    Title = t.Title,
+                    Status = t.TicketStatus.StatusName,
+                    Priority = t.TicketPriority.PriorityName,
+                    Category = t.TicketCategory.CategoryName,
+                    CreatedAt = t.CreatedAt,
+                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null
+                })
+                .ToListAsync();
+        }
 
         // SupportAgent: Update Status
 
@@ -98,6 +143,30 @@ namespace SmartTicketApi.Services.Tickets
                 dto.TicketStatusId.ToString()
             );
         }
+
+        //Agent-get ticket
+        public async Task<IEnumerable<TicketListDto>> GetTicketsForAgentAsync(int agentId)
+        {
+            return await _context.Tickets
+                .AsNoTracking()
+                .Where(t => t.AssignedToId == agentId)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketCategory)
+                .Include(t => t.AssignedTo)
+                .Select(t => new TicketListDto
+                {
+                    TicketId = t.TicketId,
+                    Title = t.Title,
+                    Status = t.TicketStatus.StatusName,
+                    Priority = t.TicketPriority.PriorityName,
+                    Category = t.TicketCategory.CategoryName,
+                    CreatedAt = t.CreatedAt,
+                    AssignedTo = t.AssignedTo!.Name
+                })
+                .ToListAsync();
+        }
+
 
         // Admin: Update Ticket Priority
         public async Task UpdateTicketPriorityAsync(int ticketId, int ticketPriorityId)

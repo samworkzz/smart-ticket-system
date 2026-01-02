@@ -37,7 +37,15 @@ namespace SmartTicketApi.Controllers
                 TicketId = ticketId
             });
         }
-
+        //EndUser: Get my Tickets
+        [Authorize(Roles = "EndUser")]
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyTickets()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var tickets = await _ticketService.GetTicketsForEndUserAsync(userId);
+            return Ok(tickets);
+        }
 
         // SupportManager: Assign Ticket
 
@@ -55,7 +63,14 @@ namespace SmartTicketApi.Controllers
                 Message = "Ticket assigned successfully"
             });
         }
-
+        // SUPPORT MANAGER: get all tickets
+        [Authorize(Roles = "SupportManager")]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllTickets()
+        {
+            var tickets = await _ticketService.GetAllTicketsAsync();
+            return Ok(tickets);
+        }
 
         // SupportAgent: Update Ticket Status
 
@@ -73,7 +88,15 @@ namespace SmartTicketApi.Controllers
                 Message = "Ticket status updated successfully"
             });
         }
-
+        // SUPPORT AGENT: Get assigned ticket
+        [Authorize(Roles = "SupportAgent")]
+        [HttpGet("assigned")]
+        public async Task<IActionResult> GetAssignedTickets()
+        {
+            var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var tickets = await _ticketService.GetTicketsForAgentAsync(agentId);
+            return Ok(tickets);
+        }
 
         // Admin: Update Ticket Priority
 
@@ -89,8 +112,7 @@ namespace SmartTicketApi.Controllers
             {
                 Message = "Ticket priority updated successfully"
             });
-        }
-
+        }        
         // Helper: Extract UserId from JWT
 
         private int GetUserIdFromToken()
