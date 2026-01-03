@@ -1,1 +1,43 @@
-    <app-navbar></app-navbar>
+<h2>Agent Workload</h2>
+
+<table mat-table [dataSource]="agents">
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Agent</th>
+    <td mat-cell *matCellDef="let a">{{ a.name }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="count">
+    <th mat-header-cell *matHeaderCellDef>Tickets</th>
+    <td mat-cell *matCellDef="let a">{{ a.assignedTicketCount }}</td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="['name','count']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['name','count']"></tr>
+</table>
+
+<hr />
+
+<h2>Unassigned Tickets</h2>
+
+<table mat-table [dataSource]="unassignedTickets">
+
+  <ng-container matColumnDef="title">
+    <th mat-header-cell *matHeaderCellDef>Title</th>
+    <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="assign">
+    <th mat-header-cell *matHeaderCellDef>Assign</th>
+    <td mat-cell *matCellDef="let t">
+      <mat-select placeholder="Select Agent"
+        (selectionChange)="assign(t.ticketId, $event.value)">
+        <mat-option *ngFor="let a of agents" [value]="a.agentId">
+          {{ a.name }}
+        </mat-option>
+      </mat-select>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="['title','assign']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['title','assign']"></tr>
+</table>

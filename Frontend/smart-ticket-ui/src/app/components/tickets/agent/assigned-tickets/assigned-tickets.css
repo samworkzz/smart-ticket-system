@@ -1,0 +1,14 @@
+mat-card {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}

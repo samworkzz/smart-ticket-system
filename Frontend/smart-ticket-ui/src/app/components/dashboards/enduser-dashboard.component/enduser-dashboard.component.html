@@ -1,10 +1,94 @@
-<app-navbar></app-navbar>
+<div class="enduser-dashboard">
 
-<div class="dashboard-wrapper">
-  <div class="container">
-    <h2>Welcome!</h2>
-    <p>
-      Use the navigation bar to create and track your support tickets.
+  <!-- HEADER -->
+  <mat-card class="dashboard-header">
+    <h2>End User Dashboard</h2>
+    <p class="subtitle">
+      Create new support tickets or track existing ones.
     </p>
+  </mat-card>
+
+  <!-- ACTION BUTTONS -->
+  <div class="dashboard-actions">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="currentView = 'list'"
+    >
+      My Tickets
+    </button>
+
+    <button
+      mat-raised-button
+      color="accent"
+      (click)="currentView = 'create'"
+    >
+      Create Ticket
+    </button>
   </div>
+
+  <!-- CREATE TICKET -->
+  <app-create-ticket
+    *ngIf="currentView === 'create'"
+    (ticketCreated)="onTicketCreated()"
+  ></app-create-ticket>
+
+  <!-- MY TICKETS LIST -->
+  <mat-card *ngIf="currentView === 'list'">
+
+    <h3>My Tickets</h3>
+
+    <div *ngIf="loading" class="spinner-wrapper">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <table
+      mat-table
+      [dataSource]="tickets"
+      *ngIf="!loading && tickets.length > 0"
+      class="mat-elevation-z2"
+    >
+
+      <ng-container matColumnDef="ticketId">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef>Title</th>
+        <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef>Category</th>
+        <td mat-cell *matCellDef="let t">{{ t.category }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let t">{{ t.status }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.createdAt | date:'short' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <p *ngIf="!loading && tickets.length === 0" class="empty-text">
+      You have not created any tickets yet.
+    </p>
+
+  </mat-card>
+
 </div>

@@ -1,0 +1,48 @@
+.my-tickets-card {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.empty-text {
+  text-align: center;
+  color: #666;
+  margin-top: 20px;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.Open {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+
+.status-badge.InProgress {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.status-badge.Closed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}

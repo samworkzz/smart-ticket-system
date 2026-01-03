@@ -1,44 +1,68 @@
-<app-navbar></app-navbar>
-<h3>Create Ticket</h3>
+<mat-card class="create-ticket-card">
+  <h2>Create Ticket</h2>
 
-<form (ngSubmit)="submit()">
+  <form (ngSubmit)="submit()">
 
-  <div>
-    <label>Title</label>
-    <input type="text" [(ngModel)]="title" name="title" required />
-  </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Title</mat-label>
+      <input
+        matInput
+        name="title"
+        [(ngModel)]="title"
+        required
+      />
+    </mat-form-field>
 
-  <div>
-    <label>Description</label>
-    <textarea [(ngModel)]="description" name="description" required></textarea>
-  </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        name="description"
+        [(ngModel)]="description"
+        required
+      ></textarea>
+    </mat-form-field>
 
-  <div>
-    <label>Category</label>
-    <select [(ngModel)]="ticketCategoryId" name="category">
-      <option [value]="1">Software</option>
-      <option [value]="2">Hardware</option>
-      <option [value]="3">Network</option>
-    </select>
-  </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Category</mat-label>
+      <mat-select
+        name="category"
+        [(ngModel)]="ticketCategoryId"
+      >
+        <mat-option [value]="1">Software</mat-option>
+        <mat-option [value]="2">Hardware</mat-option>
+        <mat-option [value]="3">Network</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <div>
-    <label>Priority</label>
-    <select [(ngModel)]="ticketPriorityId" name="priority">
-      <option [value]="1">Low</option>
-      <option [value]="2">Medium</option>
-      <option [value]="3">High</option>
-    </select>
-  </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Priority</mat-label>
+      <mat-select
+        name="priority"
+        [(ngModel)]="ticketPriorityId"
+      >
+        <mat-option [value]="1">Low</mat-option>
+        <mat-option [value]="2">Medium</mat-option>
+        <mat-option [value]="3">High</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <button type="submit">Submit Ticket</button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+    >
+      Submit Ticket
+    </button>
 
-</form>
+    <p class="success" *ngIf="successMessage">
+      {{ successMessage }}
+    </p>
 
-<p *ngIf="successMessage" style="color: green">
-  {{ successMessage }}
-</p>
+    <p class="error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
 
-<p *ngIf="errorMessage" style="color: red">
-  {{ errorMessage }}
-</p>
+  </form>
+</mat-card>

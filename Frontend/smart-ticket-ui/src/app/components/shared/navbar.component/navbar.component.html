@@ -1,0 +1,27 @@
+<header class="app-navbar" *ngIf="isLoggedIn()">
+
+  <div class="nav-left">
+    <span class="brand">Smart Ticket System</span>
+
+    <ng-container *ngIf="getRole() === 'EndUser'">
+      <a routerLink="/enduser">Dashboard</a>
+    </ng-container>
+
+    <ng-container *ngIf="getRole() === 'SupportAgent'">
+      <a routerLink="/agent">Assigned Tickets</a>
+    </ng-container>
+
+    <ng-container *ngIf="getRole() === 'SupportManager'">
+      <a routerLink="/manager">Manage Tickets</a>
+    </ng-container>
+
+    <ng-container *ngIf="getRole() === 'Admin'">
+      <a routerLink="/admin">Admin Panel</a>
+    </ng-container>
+  </div>
+
+  <div class="nav-right">
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+
+</header>

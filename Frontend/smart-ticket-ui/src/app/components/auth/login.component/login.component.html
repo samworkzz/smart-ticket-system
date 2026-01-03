@@ -1,43 +1,31 @@
-<div class="auth-wrapper">
+<div class="container d-flex justify-content-center align-items-center vh-100">
   <mat-card class="auth-card">
+    <h2 class="text-center mb-3">Login</h2>
 
-    <h2 class="text-center mb-4">Login</h2>
+    <form (ngSubmit)="login()">
 
-    <form (ngSubmit)="login()" class="auth-form">
-
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="w-100 mb-3">
         <mat-label>Email</mat-label>
-        <input matInput type="email"
-               [(ngModel)]="email"
-               name="email"
-               required />
+        <input matInput [(ngModel)]="email" name="email" required />
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="w-100 mb-3">
         <mat-label>Password</mat-label>
-        <input matInput type="password"
-               [(ngModel)]="password"
-               name="password"
-               required />
+        <input matInput type="password" [(ngModel)]="password" name="password" required />
       </mat-form-field>
 
-      <button
-        mat-raised-button
-        color="primary"
-        class="w-100 mt-3">
+      <button mat-raised-button color="primary" class="w-100">
         Login
       </button>
-
     </form>
 
-    <p class="text-danger text-center mt-3" *ngIf="errorMessage">
+    <p class="text-danger mt-2 text-center" *ngIf="errorMessage">
       {{ errorMessage }}
     </p>
 
     <div class="text-center mt-3">
-      <p>New User?</p>
+      <p>New user? </p>
       <a routerLink="/register">Register</a>
     </div>
-
   </mat-card>
 </div>

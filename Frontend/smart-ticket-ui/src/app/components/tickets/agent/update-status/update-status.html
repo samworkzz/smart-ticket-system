@@ -1,0 +1,24 @@
+
+<h3>Update Ticket Status</h3>
+
+<form (ngSubmit)="update()">
+  <div>
+    <label>Ticket ID</label>
+    <input type="number" [(ngModel)]="ticketId" name="ticketId" required />
+  </div>
+
+  <div>
+    <label>Status</label>
+    <select [(ngModel)]="ticketStatusId" name="status">
+      <option [value]="2">Assigned</option>
+      <option [value]="3">In Progress</option>
+      <option [value]="4">Resolved</option>
+      <option [value]="5">Closed</option>
+    </select>
+  </div>
+
+  <button type="submit">Update</button>
+</form>
+
+<p *ngIf="successMessage" style="color: green">{{ successMessage }}</p>
+<p *ngIf="errorMessage" style="color: red">{{ errorMessage }}</p>

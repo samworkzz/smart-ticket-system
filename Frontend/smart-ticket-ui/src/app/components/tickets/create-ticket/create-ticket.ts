@@ -1,16 +1,32 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TicketService } from '../../../services/ticket.service.ts';
-import { NavbarComponent } from '../../../shared/navbar/navbar.js';
+import { TicketService } from '../../../services/ticket.service';
+
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-create-ticket',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
-  templateUrl: './create-ticket.html'
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatSelectModule
+  ],
+  templateUrl: './create-ticket.html',
+  styleUrls: ['./create-ticket.css']
 })
 export class CreateTicketComponent {
+
+  @Output() ticketCreated = new EventEmitter<void>();
 
   title = '';
   description = '';
@@ -34,8 +50,12 @@ export class CreateTicketComponent {
       next: () => {
         this.successMessage = 'Ticket created successfully';
         this.errorMessage = '';
+
         this.title = '';
         this.description = '';
+
+        // 🔑 Notify parent dashboard
+        this.ticketCreated.emit();
       },
       error: () => {
         this.errorMessage = 'Failed to create ticket';

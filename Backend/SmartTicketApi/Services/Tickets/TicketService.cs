@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartTicketApi.Data;
-using SmartTicketApi.Models.DTOs;
+using SmartTicketApi.Models.DTOs.Agent;
+using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Models.Entities;
 
@@ -46,7 +47,7 @@ namespace SmartTicketApi.Services.Tickets
 
             return ticket.TicketId;
         }
-        //End User get ticket
+        //get all tickets created by end user
         public async Task<IEnumerable<TicketListDto>> GetTicketsForEndUserAsync(int userId)
         {
             return await _context.Tickets
@@ -68,37 +69,38 @@ namespace SmartTicketApi.Services.Tickets
                 })
                 .ToListAsync();
         }
-
-
         // SupportManager: Assign Ticket
 
-        public async Task AssignTicketAsync(AssignTicketDto dto)
-        {
-            var ticket = await _context.Tickets
-                .FirstOrDefaultAsync(t => t.TicketId == dto.TicketId);
+        //public async Task AssignTicketAsync(AssignTicketDto dto)
+        //{
+        //    var ticket = await _context.Tickets
+        //        .FirstOrDefaultAsync(t => t.TicketId == dto.TicketId);
 
-            if (ticket == null)
-                throw new Exception("Ticket not found");
+        //    if (ticket == null)
+        //        throw new Exception("Ticket not found");
 
-            ticket.AssignedToId = dto.AssignedToUserId;
-            ticket.UpdatedAt = DateTime.UtcNow;
-            ticket.AssignedAt = DateTime.UtcNow;
+        //    ticket.AssignedToId = dto.AssignedToUserId;
+        //    ticket.UpdatedAt = DateTime.UtcNow;
+        //    ticket.AssignedAt = DateTime.UtcNow;
 
-            var assignedStatus = await _context.TicketStatuses
-                .FirstAsync(s => s.StatusName == "Assigned");
+        //    var assignedStatus = await _context.TicketStatuses
+        //        .FirstAsync(s => s.StatusName == "Assigned");
 
-            ticket.TicketStatusId = assignedStatus.TicketStatusId;
+        //    ticket.TicketStatusId = assignedStatus.TicketStatusId;
 
-            await _context.SaveChangesAsync();
+        //    await _context.SaveChangesAsync();
 
-            await AddActivityLog(
-                ticket.TicketId,
-                "Ticket Assigned",
-                null,
-                $"AssignedToUserId={dto.AssignedToUserId}"
-            );
-        }
-        //support manager get all tickets
+        //    await AddActivityLog(
+        //        ticket.TicketId,
+        //        "Ticket Assigned",
+        //        null,
+        //        $"AssignedToUserId={dto.AssignedToUserId}"
+        //    );
+        //}
+       
+
+
+        //list of all the tickets 
         public async Task<IEnumerable<TicketListDto>> GetAllTicketsAsync()
         {
             return await _context.Tickets
@@ -144,7 +146,8 @@ namespace SmartTicketApi.Services.Tickets
             );
         }
 
-        //Agent-get ticket
+        //get all assigned tickets
+
         public async Task<IEnumerable<TicketListDto>> GetTicketsForAgentAsync(int agentId)
         {
             return await _context.Tickets
@@ -166,7 +169,6 @@ namespace SmartTicketApi.Services.Tickets
                 })
                 .ToListAsync();
         }
-
 
         // Admin: Update Ticket Priority
         public async Task UpdateTicketPriorityAsync(int ticketId, int ticketPriorityId)
@@ -254,5 +256,10 @@ namespace SmartTicketApi.Services.Tickets
             _context.TicketActivityLogs.Add(log);
             await _context.SaveChangesAsync();
         }
+
+
+
+
+
     }
 }

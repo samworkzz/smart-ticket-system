@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using SmartTicketApi.Data;
 using SmartTicketApi.Models.Entities;
 using SmartTicketApi.Services.Auth;
+using SmartTicketApi.Services.Manager;
 using SmartTicketApi.Services.TicketComments;
 using SmartTicketApi.Services.Tickets;
 using System.Text;
@@ -53,6 +54,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
+builder.Services.AddScoped<IManagerService, ManagerService>();
 
 
 // Swagger
