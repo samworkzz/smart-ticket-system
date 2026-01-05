@@ -1,0 +1,58 @@
+:root {
+    --primary-color: #3f51b5;
+    --accent-color: #ff4081;
+    --success-color: #4caf50;
+    --warn-color: #f44336;
+    --bg-light: #f5f7fa;
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+body {
+    background-color: var(--bg-light);
+    font-family: 'Inter', 'Roboto', sans-serif;
+    margin: 0;
+    color: #333;
+}
+
+.fadeIn {
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Material overrides for a more modern look */
+.mat-mdc-card {
+    border-radius: 16px !important;
+    box-shadow: var(--card-shadow) !important;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.mat-mdc-button,
+.mat-mdc-raised-button {
+    border-radius: 8px !important;
+    text-transform: none !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.2px !important;
+}
+
+.mat-mdc-form-field {
+    border-radius: 10px !important;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}

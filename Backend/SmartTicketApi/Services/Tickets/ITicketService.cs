@@ -11,8 +11,9 @@ namespace SmartTicketApi.Services.Tickets
         Task<int> CreateTicketAsync(int userId, CreateTicketDto dto);
         Task<IEnumerable<TicketListDto>> GetTicketsForEndUserAsync(int userId);
 
-        //Support Manager
+        // Support Manager
         Task<IEnumerable<TicketListDto>> GetAllTicketsAsync();
+        Task AssignTicketAsync(AssignTicketDto dto);
 
         // Support Agent
         Task UpdateTicketStatusAsync(UpdateTicketStatusDto dto);
@@ -20,6 +21,13 @@ namespace SmartTicketApi.Services.Tickets
 
         // Admin
         Task UpdateTicketPriorityAsync(int ticketId, int ticketPriorityId);
+
+        // Shared (Details)
+        Task<TicketDetailsDto?> GetTicketDetailsAsync(int ticketId, int requestorId, string requestorRole);
+        Task ReopenTicketAsync(int ticketId);
+        Task CancelTicketAsync(int ticketId);
+
+        Task<object> GetDashboardMetricsAsync();
 
 
        

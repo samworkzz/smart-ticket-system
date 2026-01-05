@@ -1,25 +1,28 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AgentWorkload, UnassignedTicket, AssignTicketPayload } from '../models/manager.models';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ManagerService {
 
-  private apiUrl = 'https://localhost:7088/api/manager';
+  private apiUrl = 'http://localhost:5125/api/manager';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  getAgents() {
-    return this.http.get<any[]>(`${this.apiUrl}/agents`);
+  getAgents(): Observable<AgentWorkload[]> {
+    return this.http.get<AgentWorkload[]>(`${this.apiUrl}/agents`);
   }
 
-  getUnassignedTickets() {
-    return this.http.get<any[]>(`${this.apiUrl}/unassigned-tickets`);
+  getUnassignedTickets(): Observable<UnassignedTicket[]> {
+    return this.http.get<UnassignedTicket[]>(`${this.apiUrl}/unassigned-tickets`);
   }
 
-  assignTicket(ticketId: number, agentId: number) {
-    return this.http.put(`${this.apiUrl}/assign`, {
+  assignTicket(ticketId: number, agentId: number): Observable<any> {
+    const payload: AssignTicketPayload = {
       ticketId,
-      agentId
-    });
+      assignedToUserId: agentId
+    };
+    return this.http.put(`${this.apiUrl}/assign`, payload);
   }
 }

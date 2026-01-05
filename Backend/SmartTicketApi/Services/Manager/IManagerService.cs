@@ -6,7 +6,7 @@ namespace SmartTicketApi.Services.Manager
     public interface IManagerService
     {
         Task<List<AgentWorkloadDto>> GetAgentWorkloadsAsync();
-        Task<List<object>> GetUnassignedTicketsAsync();
+        Task<List<UnassignedTicketDto>> GetUnassignedTicketsAsync();
         Task AssignTicketAsync(int ticketId, int agentId);
     }
 }

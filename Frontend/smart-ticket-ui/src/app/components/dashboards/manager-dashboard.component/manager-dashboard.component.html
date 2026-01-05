@@ -1,43 +1,87 @@
-<h2>Agent Workload</h2>
+<div class="dashboard-container">
 
-<table mat-table [dataSource]="agents">
-  <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef>Agent</th>
-    <td mat-cell *matCellDef="let a">{{ a.name }}</td>
-  </ng-container>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>Manager Dashboard</h1>
+      <p class="subtitle">Overview and Ticket Assignment</p>
+    </div>
+    <div class="actions">
+      <button mat-raised-button color="primary" (click)="loadData()">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </header>
 
-  <ng-container matColumnDef="count">
-    <th mat-header-cell *matHeaderCellDef>Tickets</th>
-    <td mat-cell *matCellDef="let a">{{ a.assignedTicketCount }}</td>
-  </ng-container>
+  <mat-progress-bar mode="indeterminate" *ngIf="isLoading" class="loading-bar"></mat-progress-bar>
 
-  <tr mat-header-row *matHeaderRowDef="['name','count']"></tr>
-  <tr mat-row *matRowDef="let row; columns: ['name','count']"></tr>
-</table>
+  <div class="dashboard-grid">
 
-<hr />
+    <!-- Left Column: Unassigned Tickets -->
+    <div class="main-content">
+      <div class="section-title">
+        <h2>Unassigned Tickets <span class="badge-count">{{unassignedTickets.length}}</span></h2>
+      </div>
 
-<h2>Unassigned Tickets</h2>
+      <div class="ticket-list" *ngIf="unassignedTickets.length > 0; else noTickets">
+        <mat-card *ngFor="let t of unassignedTickets" class="ticket-card fadeIn">
+          <mat-card-header>
+            <mat-card-title>{{t.title}}</mat-card-title>
+            <mat-card-subtitle>
+              <span [class]="'priority-badge ' + getPriorityClass(t.priority)">{{t.priority}}</span>
+              <span class="category-badge">{{t.category}}</span>
+              <span class="date-badge">{{t.createdAt | date:'short'}}</span>
+            </mat-card-subtitle>
+          </mat-card-header>
 
-<table mat-table [dataSource]="unassignedTickets">
+          <mat-card-content>
+            <p>Ticket ID: #{{t.ticketId}}</p>
+          </mat-card-content>
 
-  <ng-container matColumnDef="title">
-    <th mat-header-cell *matHeaderCellDef>Title</th>
-    <td mat-cell *matCellDef="let t">{{ t.title }}</td>
-  </ng-container>
+          <mat-card-actions align="end">
+            <button mat-button color="primary" (click)="viewDetails(t.ticketId)">View</button>
+            <mat-form-field appearance="outline" class="agent-select">
+              <mat-label>Assign to Agent</mat-label>
+              <mat-select (selectionChange)="assign(t.ticketId, $event.value)">
+                <mat-option *ngFor="let a of agents" [value]="a.agentId">
+                  {{ a.name }} ({{ a.assignedTicketCount }} active)
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </mat-card-actions>
+        </mat-card>
+      </div>
 
-  <ng-container matColumnDef="assign">
-    <th mat-header-cell *matHeaderCellDef>Assign</th>
-    <td mat-cell *matCellDef="let t">
-      <mat-select placeholder="Select Agent"
-        (selectionChange)="assign(t.ticketId, $event.value)">
-        <mat-option *ngFor="let a of agents" [value]="a.agentId">
-          {{ a.name }}
-        </mat-option>
-      </mat-select>
-    </td>
-  </ng-container>
+      <ng-template #noTickets>
+        <div class="empty-state">
+          <mat-icon>check_circle</mat-icon>
+          <h3>All caught up!</h3>
+          <p>No unassigned tickets pending.</p>
+        </div>
+      </ng-template>
+    </div>
 
-  <tr mat-header-row *matHeaderRowDef="['title','assign']"></tr>
-  <tr mat-row *matRowDef="let row; columns: ['title','assign']"></tr>
-</table>
+    <!-- Right Column: Agent Workload -->
+    <div class="side-content">
+      <div class="section-title">
+        <h2>Agent Workload</h2>
+      </div>
+
+      <mat-card class="workload-card">
+        <mat-list>
+          <div *ngFor="let agent of agents" class="agent-item">
+            <div class="agent-info">
+              <span class="agent-name">{{agent.name}}</span>
+              <span class="agent-status">{{agent.assignedTicketCount}} Tickets</span>
+            </div>
+            <!-- Simple visual indicator of load -->
+            <div class="load-indicator">
+              <div class="bar" [style.width.%]="(agent.assignedTicketCount * 10) + 5"></div>
+            </div>
+          </div>
+        </mat-list>
+      </mat-card>
+    </div>
+
+  </div>
+</div>

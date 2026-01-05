@@ -38,7 +38,8 @@ export class EnduserDashboardComponent implements OnInit {
     'category',
     'priority',
     'status',
-    'createdAt'
+    'createdAt',
+    'actions'
   ];
 
   constructor(
@@ -46,7 +47,7 @@ export class EnduserDashboardComponent implements OnInit {
     private ticketService: TicketService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -73,6 +74,10 @@ export class EnduserDashboardComponent implements OnInit {
   onTicketCreated(): void {
     this.currentView = 'list';
     this.loadTickets(); // refresh list
+  }
+
+  viewDetails(ticketId: number): void {
+    this.router.navigate(['/ticket', ticketId]);
   }
 
   logout(): void {

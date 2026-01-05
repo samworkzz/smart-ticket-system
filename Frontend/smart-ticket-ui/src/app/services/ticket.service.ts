@@ -7,9 +7,9 @@ import { Observable } from 'rxjs';
 })
 export class TicketService {
 
-  private apiUrl = 'https://localhost:7088/api/ticket';
+  private apiUrl = 'http://localhost:5125/api/ticket';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Helper method to attach JWT token to requests
@@ -69,7 +69,7 @@ export class TicketService {
    * SUPPORT MANAGER: Assign ticket to agent
    */
   assignTicket(ticketId: number, assignedToUserId: number): Observable<any> {
-    return this.http.put(
+    return this.http.post(
       `${this.apiUrl}/assign`,
       { ticketId, assignedToUserId },
       this.getAuthHeaders()
@@ -86,5 +86,25 @@ export class TicketService {
       this.getAuthHeaders()
     );
   }
+  /**
+   * SHARED: Get Ticket Details
+   */
+  getTicketDetails(ticketId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/${ticketId}`,
+      this.getAuthHeaders()
+    );
+  }
+
+  reopenTicket(ticketId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reopen/${ticketId}`, {}, this.getAuthHeaders());
+  }
+
+  cancelTicket(ticketId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cancel/${ticketId}`, {}, this.getAuthHeaders());
+  }
+
+  getMetrics(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/metrics`, this.getAuthHeaders());
+  }
 }
-  

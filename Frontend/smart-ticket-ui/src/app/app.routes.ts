@@ -20,15 +20,20 @@ export const routes: Routes = [
   },
   {
     path: 'manager',
-    component: ManagerDashboardComponent,
+    loadComponent: () => import('./components/dashboards/manager-dashboard.component/manager-dashboard.component').then(m => m.ManagerDashboardComponent),
     canActivate: [authGuard, roleGuard],
     data: { role: 'SupportManager' }
   },
   {
     path: 'agent',
-    component: AgentDashboardComponent,
+    loadComponent: () => import('./components/dashboards/agent-dashboard.component/agent-dashboard.component').then(m => m.AgentDashboardComponent),
     canActivate: [authGuard, roleGuard],
     data: { role: 'SupportAgent' }
+  },
+  {
+    path: 'ticket/:id',
+    loadComponent: () => import('./components/ticket-details/ticket-details.component').then(m => m.TicketDetailsComponent),
+    canActivate: [authGuard] // Accessible to all roles (Backend handles specific restrictions)
   },
   {
     path: 'admin',
@@ -36,19 +41,25 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { role: 'Admin' }
   },
-  
   {
-  path: 'create-ticket',
-  component: CreateTicketComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { role: 'EndUser' }
-},
+    path: 'reports',
+    loadComponent: () => import('./components/reports/reports.component').then(m => m.ReportsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { role: ['Admin', 'SupportManager'] }
+  },
 
-// {
-//   path:'my-tickets',
-//   component: MyTicketsComponent,
-//   canActivate:[authGuard,roleGuard],
-//   data:{role:'EndUser'}
-// },
+  {
+    path: 'create-ticket',
+    component: CreateTicketComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'EndUser' }
+  },
+
+  {
+    path: 'my-tickets',
+    component: MyTicketsComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'EndUser' }
+  },
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];

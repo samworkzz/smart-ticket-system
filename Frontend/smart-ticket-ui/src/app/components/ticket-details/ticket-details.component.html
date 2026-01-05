@@ -1,0 +1,144 @@
+<div class="details-container" *ngIf="ticket; else loadingOrError">
+
+    <!-- Header Section -->
+    <mat-card class="ticket-header-card fadeIn">
+        <div class="header-row">
+            <div>
+                <h1 class="ticket-title">
+                    <span class="id-badge">#{{ticket.ticketId}}</span> {{ticket.title}}
+                </h1>
+                <div class="meta-row">
+                    <span class="badge priority" [ngClass]="getPriorityClass(ticket.priority)">
+                        {{ticket.priority}} Priority
+                    </span>
+                    <span class="badge status" [ngClass]="getStatusClass(ticket.status)">
+                        {{ticket.status}}
+                    </span>
+                    <span class="meta-text">
+                        Created on {{ticket.createdAt | date:'medium'}} by <strong>{{ticket.createdBy}}</strong>
+                    </span>
+                </div>
+            </div>
+            <div class="actions" *ngIf="!isLoading">
+                <button mat-flat-button color="accent" *ngIf="canReopen()" (click)="reopen()">
+                    <mat-icon>refresh</mat-icon> Reopen Ticket
+                </button>
+                <button mat-flat-button color="warn" *ngIf="canCancel()" (click)="cancel()">
+                    <mat-icon>cancel</mat-icon> Cancel Ticket
+                </button>
+            </div>
+        </div>
+    </mat-card>
+
+    <div class="content-grid">
+
+        <!-- Left Column: Details -->
+        <div class="main-column">
+            <mat-card class="details-card fadeIn">
+                <mat-card-header>
+                    <mat-card-title>Description</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <p class="description-text">{{ticket.description}}</p>
+
+                    <mat-divider class="spacer"></mat-divider>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Category</label>
+                            <span>{{ticket.category}}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Assigned To</label>
+                            <span>{{ticket.assignedTo || 'Unassigned'}}</span>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Activity Logs -->
+            <mat-card class="logs-card fadeIn">
+                <mat-card-header>
+                    <mat-card-title>Activity History</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <mat-list>
+                        <div *ngFor="let log of ticket.activityLogs; let last = last">
+                            <div class="log-item">
+                                <mat-icon class="log-icon" color="primary">history</mat-icon>
+                                <div class="log-content">
+                                    <span class="log-action">{{log.action}}</span>
+                                    <span class="log-meta">
+                                        <span *ngIf="log.oldValue">{{log.oldValue}} &rarr; </span>
+                                        {{log.newValue}}
+                                    </span>
+                                    <span class="log-date">{{log.createdAt | date:'short'}}</span>
+                                </div>
+                            </div>
+                            <mat-divider *ngIf="!last"></mat-divider>
+                        </div>
+                    </mat-list>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <!-- Right Column: Discussion -->
+        <div class="side-column">
+            <mat-card class="comments-card fadeIn">
+                <mat-card-header>
+                    <mat-card-title>Discussion</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+
+                    <!-- Comment List -->
+                    <div class="comments-list">
+                        <div class="comment-item" *ngFor="let comment of ticket.comments">
+                            <div class="comment-avatar">
+                                {{comment.userName.charAt(0).toUpperCase()}}
+                            </div>
+                            <div class="comment-body">
+                                <div class="comment-header">
+                                    <strong>{{comment.userName}}</strong>
+                                    <span class="time">{{comment.createdAt | date:'short'}}</span>
+                                </div>
+                                <div class="comment-text">{{comment.commentText}}</div>
+                            </div>
+                        </div>
+                        <div *ngIf="ticket.comments.length === 0" class="no-comments">
+                            No comments yet. Start the conversation!
+                        </div>
+                    </div>
+
+                    <mat-divider class="spacer"></mat-divider>
+
+                    <!-- Add Comment -->
+                    <div class="add-comment-section">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Add a comment...</mat-label>
+                            <textarea matInput [(ngModel)]="newComment" rows="3"></textarea>
+                        </mat-form-field>
+                        <button mat-raised-button color="primary" [disabled]="!newComment.trim() || isSubmittingComment"
+                            (click)="submitComment()">
+                            Post Comment
+                        </button>
+                    </div>
+
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+    </div>
+
+</div>
+
+<ng-template #loadingOrError>
+    <div class="loading-container" *ngIf="isLoading">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Loading ticket details...</p>
+    </div>
+    <div class="error-container" *ngIf="!isLoading && !ticket">
+        <h2>Ticket not found</h2>
+        <p>The ticket you are looking for does not exist or you do not have permission to view it.</p>
+        <button mat-button color="primary" routerLink="/dashboard">Back to Dashboard</button>
+    </div>
+</ng-template>

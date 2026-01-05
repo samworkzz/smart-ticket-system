@@ -20,6 +20,21 @@ namespace SmartTicketApi.Controllers
             _ticketService = ticketService;
         }
 
+        // Shared: Get Ticket Details
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTicket(int id)
+        {
+            var userId = GetUserIdFromToken();
+            var role = User.FindFirstValue(ClaimTypes.Role);
+
+            var ticket = await _ticketService.GetTicketDetailsAsync(id, userId, role!);
+
+            if (ticket == null)
+                return NotFound("Ticket not found or access denied.");
+
+            return Ok(ticket);
+        }
+
         // EndUser: Create Ticket
 
         [Authorize(Roles = "EndUser")]
@@ -107,6 +122,39 @@ namespace SmartTicketApi.Controllers
             var tickets = await _ticketService.GetAllTicketsAsync();
             return Ok(tickets);
         }
+
+        [Authorize(Roles = "SupportManager")]
+        [HttpPost("assign")]
+        public async Task<IActionResult> AssignTicket([FromBody] AssignTicketDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            await _ticketService.AssignTicketAsync(dto);
+            return Ok(new { Message = "Ticket assigned successfully" });
+        }
+
+        // REOPEN & CANCEL
+        [HttpPost("reopen/{id}")]
+        public async Task<IActionResult> ReopenTicket(int id)
+        {
+            await _ticketService.ReopenTicketAsync(id);
+            return Ok(new { Message = "Ticket reopened successfully" });
+        }
+
+        [HttpPost("cancel/{id}")]
+        public async Task<IActionResult> CancelTicket(int id)
+        {
+            await _ticketService.CancelTicketAsync(id);
+            return Ok(new { Message = "Ticket cancelled successfully" });
+        }
+        [HttpGet("metrics")]
+        public async Task<IActionResult> GetMetrics()
+        {
+            var metrics = await _ticketService.GetDashboardMetricsAsync();
+            return Ok(metrics);
+        }
+
         private int GetUserIdFromToken()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)

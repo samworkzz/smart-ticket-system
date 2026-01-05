@@ -8,14 +8,19 @@ using SmartTicketApi.Services.Auth;
 using SmartTicketApi.Services.Manager;
 using SmartTicketApi.Services.TicketComments;
 using SmartTicketApi.Services.Tickets;
+using SmartTicketApi.Services.Admin;
+using SmartTicketApi.Services.Notifications;
 using System.Text;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -55,6 +60,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
 builder.Services.AddScoped<IManagerService, ManagerService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddHostedService<SLABackgroundService>();
 
 
 // Swagger
@@ -78,8 +86,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 
-// MIDDLEWARE PIPELINE
-
+app.UseMiddleware<SmartTicketApi.Middleware.GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

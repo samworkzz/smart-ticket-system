@@ -1,0 +1,88 @@
+.reports-container {
+    padding: 24px;
+    background: #f8faff;
+    min-height: 100vh;
+}
+
+.reports-header {
+    margin-bottom: 32px;
+}
+
+.reports-header h1 {
+    font-size: 2rem;
+    color: #1a237e;
+    margin: 0;
+}
+
+.reports-header p {
+    color: #666;
+}
+
+.metrics-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.summary-card {
+    text-align: center;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card .count {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #3f51b5;
+}
+
+.summary-card .label {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #777;
+    letter-spacing: 1px;
+    margin-top: 8px;
+}
+
+.summary-card.escalated .count {
+    color: #f44336;
+}
+
+.summary-card.breach .count {
+    color: #ff9800;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 24px;
+}
+
+.chart-card {
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card.wide {
+    grid-column: span 1;
+}
+
+.chart-wrapper {
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+    }
+}

@@ -41,23 +41,23 @@ namespace SmartTicketApi.Services.Manager
         // ==================================
         // 2️⃣ Get all unassigned tickets
         // ==================================
-        public async Task<List<object>> GetUnassignedTicketsAsync()
+        public async Task<List<UnassignedTicketDto>> GetUnassignedTicketsAsync()
         {
             var tickets = await _context.Tickets
                 .Where(t => t.AssignedToId == null)
                 .Include(t => t.TicketCategory)
                 .Include(t => t.TicketPriority)
-                .Select(t => new
+                .Select(t => new UnassignedTicketDto
                 {
-                    t.TicketId,
-                    t.Title,
+                    TicketId = t.TicketId,
+                    Title = t.Title,
                     Category = t.TicketCategory.CategoryName,
                     Priority = t.TicketPriority.PriorityName,
-                    t.CreatedAt
+                    CreatedAt = t.CreatedAt
                 })
                 .ToListAsync();
 
-            return tickets.Cast<object>().ToList();
+            return tickets;
         }
 
         // ================================
@@ -79,9 +79,6 @@ namespace SmartTicketApi.Services.Manager
                 throw new Exception("Agent not found or not a SupportAgent");
 
 
-            if (!agentExists)
-                throw new Exception("Agent not found");
-
             ticket.AssignedToId = agentId;
 
             // Optional: Move ticket to "In Progress"
@@ -90,5 +87,40 @@ namespace SmartTicketApi.Services.Manager
 
             await _context.SaveChangesAsync();
         }
+        //public async Task AssignTicketAsync(int ticketId, int agentId)
+        //{
+        //    Console.WriteLine($"AssignTicket called with agentId = {agentId}");
+
+        //    var allUsers = await _context.Users
+        //        .Select(u => new { u.UserId, u.Name, u.RoleId })
+        //        .ToListAsync();
+
+        //    Console.WriteLine("Users in DB:");
+        //    foreach (var u in allUsers)
+        //    {
+        //        Console.WriteLine($"UserId={u.UserId}, Name={u.Name}, RoleId={u.RoleId}");
+        //    }
+
+        //    var agent = await _context.Users
+        //        .Include(u => u.Role)
+        //        .FirstOrDefaultAsync(u => u.UserId == agentId);
+
+        //    if (agent == null)
+        //        throw new Exception("Agent not found");
+
+        //    if (agent.Role.RoleName != "SupportAgent")
+        //        throw new Exception("User is not a SupportAgent");
+
+        //    var ticket = await _context.Tickets
+        //        .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+        //    if (ticket == null)
+        //        throw new Exception("Ticket not found");
+
+        //    ticket.AssignedToId = agentId;
+        //    ticket.TicketStatusId = 2;
+
+        //    await _context.SaveChangesAsync();
+        //}
     }
 }

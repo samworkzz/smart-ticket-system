@@ -87,7 +87,7 @@ namespace SmartTicketApi.Services.Auth
             );
 
             var expires = DateTime.UtcNow.AddMinutes(
-                double.Parse(_config["Jwt:DurationInMinutes"])
+                double.Parse(_config["Jwt:DurationInMinutes"]!)
             );
 
             var token = new JwtSecurityToken(

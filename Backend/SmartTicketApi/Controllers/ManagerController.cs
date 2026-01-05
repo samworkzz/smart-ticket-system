@@ -46,8 +46,17 @@ namespace SmartTicketApi.Controllers
             if (dto == null)
                 return BadRequest("Invalid payload");
 
-            await _managerService.AssignTicketAsync(dto.TicketId, dto.AssignedToUserId);
-            return Ok(new { message = "Ticket assigned successfully" });
+            try
+            {
+                await _managerService.AssignTicketAsync(dto.TicketId, dto.AssignedToUserId);
+                return Ok(new { message = "Ticket assigned successfully" });
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("not found"))
+                    return NotFound(ex.Message);
+                return BadRequest(ex.Message);
+            }
         }
 
         // ============================

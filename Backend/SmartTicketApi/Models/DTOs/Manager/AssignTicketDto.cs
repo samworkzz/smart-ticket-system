@@ -8,6 +8,6 @@ namespace SmartTicketApi.Models.DTOs.Manager
         public int TicketId { get; set; }
 
         [Required]
-        public int AssignedToUserId { get; set; }
+        public int AssignedToUserId{ get; set; }
     }
 }

@@ -2,8 +2,8 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { TicketService } from '../../../services/ticket.service';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TicketDetailsComponent } from '../ticket-details/ticket-details';
@@ -15,7 +15,6 @@ import { TicketDetailsComponent } from '../ticket-details/ticket-details';
     MatTableModule,
     MatCardModule,
     MatProgressSpinnerModule,
-    MatDialogModule,
   ],
   templateUrl: './my-tickets.html',
   styleUrls: ['./my-tickets.css']
@@ -35,9 +34,9 @@ export class MyTicketsComponent implements OnInit {
   tickets: any[] = [];
   loading = true;
 
-  constructor(private ticketService: TicketService, private dialog: MatDialog,  @Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(private ticketService: TicketService, private router: Router, @Inject(PLATFORM_ID) private platformId: Object) { }
 
-    ngOnInit(): void {
+  ngOnInit(): void {
     // 🚨 CRITICAL FIX
     if (isPlatformBrowser(this.platformId)) {
       this.loadTickets();
@@ -59,9 +58,6 @@ export class MyTicketsComponent implements OnInit {
     });
   }
   openDetails(ticket: any): void {
-  this.dialog.open(TicketDetailsComponent, {
-    width: '500px',
-    data: ticket
-  });
-}
+    this.router.navigate(['/ticket', ticket.ticketId]);
+  }
 }

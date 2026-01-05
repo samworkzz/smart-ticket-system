@@ -11,8 +11,9 @@
       <a routerLink="/agent">Assigned Tickets</a>
     </ng-container>
 
-    <ng-container *ngIf="getRole() === 'SupportManager'">
+    <ng-container *ngIf="getRole() === 'SupportManager' || getRole() === 'Admin'">
       <a routerLink="/manager">Manage Tickets</a>
+      <a routerLink="/reports">Reports</a>
     </ng-container>
 
     <ng-container *ngIf="getRole() === 'Admin'">

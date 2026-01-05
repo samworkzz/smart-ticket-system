@@ -1,0 +1,59 @@
+.admin-container {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.admin-card {
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+    padding: 24px;
+}
+
+.add-action {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.add-action mat-form-field {
+    flex: 1;
+}
+
+table {
+    width: 100%;
+    margin-top: 16px;
+}
+
+.mat-column-actions {
+    width: 80px;
+    text-align: right;
+}
+
+.hint {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+}
+
+.fadeIn {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

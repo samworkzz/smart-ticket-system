@@ -4,16 +4,19 @@ using SmartTicketApi.Models.DTOs.Agent;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Models.Entities;
+using SmartTicketApi.Services.Notifications;
 
 namespace SmartTicketApi.Services.Tickets
 {
     public class TicketService : ITicketService
     {
         private readonly AppDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public TicketService(AppDbContext context)
+        public TicketService(AppDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // EndUser: Create Ticket
@@ -70,33 +73,33 @@ namespace SmartTicketApi.Services.Tickets
                 .ToListAsync();
         }
         // SupportManager: Assign Ticket
+        public async Task AssignTicketAsync(AssignTicketDto dto)
+        {
+            var ticket = await _context.Tickets
+                .Include(t => t.TicketStatus)
+                .FirstOrDefaultAsync(t => t.TicketId == dto.TicketId);
 
-        //public async Task AssignTicketAsync(AssignTicketDto dto)
-        //{
-        //    var ticket = await _context.Tickets
-        //        .FirstOrDefaultAsync(t => t.TicketId == dto.TicketId);
+            if (ticket == null)
+                throw new Exception("Ticket not found");
 
-        //    if (ticket == null)
-        //        throw new Exception("Ticket not found");
+            ticket.AssignedToId = dto.AssignedToUserId;
+            ticket.UpdatedAt = DateTime.UtcNow;
+            ticket.AssignedAt = DateTime.UtcNow;
 
-        //    ticket.AssignedToId = dto.AssignedToUserId;
-        //    ticket.UpdatedAt = DateTime.UtcNow;
-        //    ticket.AssignedAt = DateTime.UtcNow;
+            var assignedStatus = await _context.TicketStatuses
+                .FirstAsync(s => s.StatusName == "Assigned");
 
-        //    var assignedStatus = await _context.TicketStatuses
-        //        .FirstAsync(s => s.StatusName == "Assigned");
+            ticket.TicketStatusId = assignedStatus.TicketStatusId;
 
-        //    ticket.TicketStatusId = assignedStatus.TicketStatusId;
+            await _context.SaveChangesAsync();
 
-        //    await _context.SaveChangesAsync();
-
-        //    await AddActivityLog(
-        //        ticket.TicketId,
-        //        "Ticket Assigned",
-        //        null,
-        //        $"AssignedToUserId={dto.AssignedToUserId}"
-        //    );
-        //}
+            await AddActivityLog(
+                ticket.TicketId,
+                "Ticket Assigned",
+                null,
+                $"AssignedToUserId={dto.AssignedToUserId}"
+            );
+        }
        
 
 
@@ -144,6 +147,18 @@ namespace SmartTicketApi.Services.Tickets
                 oldStatusId.ToString(),
                 dto.TicketStatusId.ToString()
             );
+
+            // Check if Closed (Assuming 5 is Closed based on Seed Data)
+            var closedStatus = await _context.TicketStatuses.FirstOrDefaultAsync(s => s.StatusName == "Closed");
+            if (closedStatus != null && dto.TicketStatusId == closedStatus.TicketStatusId)
+            {
+                // We need the agent info
+                 var agent = await _context.Users.FindAsync(ticket.AssignedToId);
+                 if (agent != null)
+                 {
+                     await _notificationService.NotifyTicketClosedAsync(ticket, agent);
+                 }
+            }
         }
 
         //get all assigned tickets
@@ -190,6 +205,109 @@ namespace SmartTicketApi.Services.Tickets
                 "Priority Updated",
                 oldPriorityId.ToString(),
                 ticketPriorityId.ToString()
+            );
+        }
+
+        public async Task<TicketDetailsDto?> GetTicketDetailsAsync(int ticketId, int requestorId, string requestorRole)
+        {
+            var ticket = await _context.Tickets
+                .AsNoTracking()
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketCategory)
+                .Include(t => t.CreatedBy)
+                .Include(t => t.AssignedTo)
+                .Include(t => t.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(t => t.ActivityLogs)
+                .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+            if (ticket == null)
+                return null;
+
+            // Authorization Check
+            if (requestorRole == "EndUser" && ticket.CreatedById != requestorId)
+                return null; // Not authorized
+
+            // Map to DTO
+            return new TicketDetailsDto
+            {
+                TicketId = ticket.TicketId,
+                Title = ticket.Title,
+                Description = ticket.Description,
+                Category = ticket.TicketCategory?.CategoryName ?? "Unknown",
+                Priority = ticket.TicketPriority?.PriorityName ?? "Normal",
+                Status = ticket.TicketStatus?.StatusName ?? "Unknown",
+                CreatedAt = ticket.CreatedAt,
+                CreatedBy = ticket.CreatedBy?.Name ?? "Unknown",
+                AssignedTo = ticket.AssignedTo?.Name,
+                Comments = ticket.Comments?.Select(c => new TicketCommentDto
+                {
+                    CommentId = c.TicketCommentId,
+                    CommentText = c.CommentText,
+                    UserName = c.User?.Name ?? "Unknown",
+                    CreatedAt = c.CreatedAt
+                }).OrderBy(c => c.CreatedAt).ToList() ?? new(),
+                ActivityLogs = ticket.ActivityLogs?.Select(l => new TicketLogDto
+                {
+                    LogId = l.TicketActivityLogId,
+                    Action = l.Action,
+                    OldValue = l.OldValue,
+                    NewValue = l.NewValue,
+                    CreatedAt = l.CreatedAt
+                }).OrderByDescending(l => l.CreatedAt).ToList() ?? new()
+            };
+        }
+
+        public async Task ReopenTicketAsync(int ticketId)
+        {
+            var ticket = await _context.Tickets
+                .Include(t => t.TicketStatus)
+                .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+            if (ticket == null)
+                throw new Exception("Ticket not found");
+
+            var statusName = ticket.AssignedToId.HasValue ? "In Progress" : "Created";
+            var status = await _context.TicketStatuses.FirstAsync(s => s.StatusName == statusName);
+            
+            var oldStatusId = ticket.TicketStatusId;
+            ticket.TicketStatusId = status.TicketStatusId;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await AddActivityLog(
+                ticket.TicketId,
+                "Ticket Reopened",
+                oldStatusId.ToString(),
+                status.TicketStatusId.ToString()
+            );
+        }
+
+        public async Task CancelTicketAsync(int ticketId)
+        {
+            var ticket = await _context.Tickets
+                .Include(t => t.TicketStatus)
+                .FirstOrDefaultAsync(t => t.TicketId == ticketId);
+
+            if (ticket == null)
+                throw new Exception("Ticket not found");
+
+            var status = await _context.TicketStatuses.FirstOrDefaultAsync(s => s.StatusName == "Closed");
+            // Optionally add "Cancelled" status if needed, but "Closed" is used here for simplicity as per seed.
+            
+            var oldStatusId = ticket.TicketStatusId;
+            ticket.TicketStatusId = status!.TicketStatusId;
+            ticket.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await AddActivityLog(
+                ticket.TicketId,
+                "Ticket Cancelled",
+                oldStatusId.ToString(),
+                status.TicketStatusId.ToString()
             );
         }
 
@@ -261,5 +379,40 @@ namespace SmartTicketApi.Services.Tickets
 
 
 
+        public async Task<object> GetDashboardMetricsAsync()
+        {
+            var statusMetrics = await _context.Tickets
+                .GroupBy(t => t.TicketStatus.StatusName)
+                .Select(g => new { Name = g.Key, Value = g.Count() })
+                .ToListAsync();
+
+            var priorityMetrics = await _context.Tickets
+                .GroupBy(t => t.TicketPriority.PriorityName)
+                .Select(g => new { Name = g.Key, Value = g.Count() })
+                .ToListAsync();
+
+            var categoryMetrics = await _context.Tickets
+                .GroupBy(t => t.TicketCategory.CategoryName)
+                .Select(g => new { Name = g.Key, Value = g.Count() })
+                .ToListAsync();
+
+            var totalTickets = await _context.Tickets.CountAsync();
+            var escalatedTickets = await _context.Tickets.CountAsync(t => t.IsEscalated);
+            
+            // SLA Compliance: Tickets not escalated / Total Tickets (assigned or closed)
+            var complianceRate = totalTickets > 0 
+                ? (double)(totalTickets - escalatedTickets) / totalTickets * 100 
+                : 100;
+
+            return new
+            {
+                StatusMetrics = statusMetrics,
+                PriorityMetrics = priorityMetrics,
+                CategoryMetrics = categoryMetrics,
+                TotalTickets = totalTickets,
+                EscalatedTickets = escalatedTickets,
+                SlaComplianceRate = Math.Round(complianceRate, 2)
+            };
+        }
     }
 }
