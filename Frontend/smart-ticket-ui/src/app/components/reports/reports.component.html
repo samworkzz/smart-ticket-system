@@ -11,6 +11,12 @@
 
     <mat-progress-bar mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
 
+    <div class="alert alert-danger" *ngIf="errorMessage"
+        style="margin-bottom: 20px; padding: 15px; background: #ffebee; color: #c62828; border-radius: 8px;">
+        <mat-icon style="vertical-align: middle; margin-right: 8px;">error</mat-icon>
+        {{errorMessage}}
+    </div>
+
     <!-- KEY METRICS ROW -->
     <div class="metrics-summary" *ngIf="metrics">
         <mat-card class="summary-card">
@@ -42,10 +48,10 @@
                     <mat-card-subtitle>Current Ticket Load (Open vs In Progress)</mat-card-subtitle>
                 </mat-card-header>
                 <div class="chart-wrapper">
-                    <ngx-charts-bar-vertical-normalized [scheme]="colorScheme" [results]="workloadData"
-                        [gradient]="false" [xAxis]="true" [yAxis]="true" [legend]="true" [showXAxisLabel]="true"
-                        [showYAxisLabel]="true" xAxisLabel="Agent" yAxisLabel="Percentage of Load">
-                    </ngx-charts-bar-vertical-normalized>
+                    <ngx-charts-bar-vertical-stacked [scheme]="colorScheme" [results]="workloadData" [gradient]="false"
+                        [xAxis]="true" [yAxis]="true" [legend]="true" [showXAxisLabel]="true" [showYAxisLabel]="true"
+                        xAxisLabel="Agent" yAxisLabel="Ticket Count">
+                    </ngx-charts-bar-vertical-stacked>
                     <!-- Note: Normalized shows ratio. If we want raw count, use bar-vertical-stacked or grouped -->
                 </div>
                 <!-- Alternative: Grouped Bar for raw counts -->

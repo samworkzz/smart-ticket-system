@@ -15,6 +15,7 @@ namespace SmartTicketApi.Data
         public DbSet<TicketActivityLog> TicketActivityLogs { get; set; }
         public DbSet<TicketComment> TicketComments { get; set; }
         public DbSet<SLA> SLAs { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

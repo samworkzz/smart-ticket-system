@@ -19,7 +19,8 @@ namespace SmartTicketApi.Controllers
         }
 
         // EndUser & SupportAgent can comment
-        [Authorize(Roles = "EndUser,SupportAgent")]
+        // EndUser, SupportAgent & SupportManager can comment
+        [Authorize(Roles = "EndUser,SupportAgent,SupportManager")]
         [HttpPost]
         public async Task<IActionResult> AddComment([FromBody] AddTicketCommentDto dto)
         {

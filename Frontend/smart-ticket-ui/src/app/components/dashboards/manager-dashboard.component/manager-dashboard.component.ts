@@ -15,7 +15,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTabsModule } from '@angular/material/tabs';
-import { AgentWorkload, UnassignedTicket } from '../../../models/manager.models';
+import { MatBadgeModule } from '@angular/material/badge';
+import { AgentWorkloadDto, UnassignedTicket } from '../../../models/manager.models';
 import { PagedRequest } from '../../../models/shared.models';
 
 @Component({
@@ -33,17 +34,20 @@ import { PagedRequest } from '../../../models/shared.models';
     MatListModule,
     MatPaginatorModule,
     MatSortModule,
+    MatSortModule,
     MatTooltipModule,
-    MatTabsModule
+    MatTabsModule,
+    MatBadgeModule
   ],
   templateUrl: './manager-dashboard.component.html',
   styleUrl: './manager-dashboard.component.css'
 })
 export class ManagerDashboardComponent implements OnInit {
 
-  agents: AgentWorkload[] = [];
+  agents: AgentWorkloadDto[] = [];
   unassignedTickets: UnassignedTicket[] = [];
-  resolvedTickets: any[] = []; // Tickets waiting for closure
+  resolvedTickets: any[] = [];
+  escalatedTickets: any[] = []; // Escalated tickets
   isLoading = false;
 
   totalCount = 0;
@@ -54,6 +58,14 @@ export class ManagerDashboardComponent implements OnInit {
 
   displayedColumns: string[] = ['id', 'title', 'category', 'priority', 'createdAt', 'assign', 'actions'];
   resolvedColumns: string[] = ['id', 'title', 'category', 'priority', 'assignedTo', 'createdAt', 'actions'];
+  escalatedColumns: string[] = ['id', 'title', 'priority', 'assignedTo', 'createdAt', 'actions'];
+
+  priorities = [
+    { id: 1, name: 'Low' },
+    { id: 2, name: 'Medium' },
+    { id: 3, name: 'High' },
+    { id: 4, name: 'Critical' }
+  ];
 
   constructor(
     private managerService: ManagerService,
@@ -79,17 +91,25 @@ export class ManagerDashboardComponent implements OnInit {
 
     this.loadUnassignedTickets();
     this.loadResolvedTickets();
+    this.loadEscalatedTickets();
   }
 
   loadResolvedTickets(): void {
     this.ticketService.getAllTickets().subscribe({
       next: (data) => {
-        // Filter for 'Resolved' status (Case insensitive check just in case)
+        // Filter for 'Resolved' status
         this.resolvedTickets = data.filter(t => t.status?.toLowerCase() === 'resolved');
-        // Note: getAllTickets returns all, filtering client side. 
-        // For larger details, we'd want a backend filter endpoint.
       },
       error: (err) => console.error('Failed to load resolved tickets', err)
+    });
+  }
+
+  loadEscalatedTickets(): void {
+    this.ticketService.getAllTickets().subscribe({
+      next: (data) => {
+        this.escalatedTickets = data.filter(t => t.isEscalated);
+      },
+      error: (err) => console.error('Failed to load escalated tickets', err)
     });
   }
 
@@ -97,8 +117,8 @@ export class ManagerDashboardComponent implements OnInit {
     if (!confirm('Are you sure you want to CLOSE this ticket? This action is final.')) return;
 
     this.isLoading = true;
-    // Assuming 6 is the ID for "Closed"
-    this.ticketService.updateStatus(ticketId, 6).subscribe({
+    // Assuming 5 is the ID for "Closed" (based on Seed Data)
+    this.ticketService.updateStatus(ticketId, 5).subscribe({
       next: () => {
         this.loadResolvedTickets(); // Refresh list
         this.isLoading = false;
@@ -153,13 +173,30 @@ export class ManagerDashboardComponent implements OnInit {
     this.managerService.assignTicket(ticketId, agentId).subscribe({
       next: () => {
         this.loadUnassignedTickets();
-        this.managerService.getAgents().subscribe(data => this.agents = data); // Refresh workload
-        // Optional: Show success toast
+        this.loadEscalatedTickets(); // Refresh escalated list too
+        this.managerService.getAgents().subscribe(data => this.agents = data);
       },
       error: (err) => {
         console.error('Assignment failed', err);
         this.isLoading = false;
         alert('Failed to assign ticket: ' + (err.error?.message || err.message));
+      }
+    });
+  }
+
+  changePriority(ticketId: number, priorityId: number): void {
+    if (!priorityId) return;
+
+    this.isLoading = true;
+    this.ticketService.updatePriority(ticketId, priorityId).subscribe({
+      next: () => {
+        this.loadEscalatedTickets(); // Refresh list
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Update priority failed', err);
+        this.isLoading = false;
+        alert('Failed to update priority');
       }
     });
   }

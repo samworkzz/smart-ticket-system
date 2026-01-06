@@ -18,6 +18,41 @@
     /* Accent color */
 }
 
+/* SLA Breach Banner */
+.breach-banner {
+    background-color: #fee2e2;
+    /* Red-100 */
+    border: 1px solid #ef4444;
+    /* Red-500 */
+    color: #b91c1c;
+    /* Red-700 */
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.1);
+    animation: slideDown 0.5s ease-out;
+}
+
+.breach-banner mat-icon {
+    color: #dc2626;
+    /* Red-600 */
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 .header-row {
     display: flex;
     justify-content: space-between;

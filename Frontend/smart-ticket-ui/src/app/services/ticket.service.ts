@@ -129,4 +129,20 @@ export class TicketService {
   getManagerReports(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/reports/manager`, this.getAuthHeaders());
   }
+
+  getAgentReports(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/reports/agent`, this.getAuthHeaders());
+  }
+
+  updatePriority(ticketId: number, ticketPriorityId: number): Observable<any> {
+    let params = new HttpParams()
+      .set('ticketId', ticketId)
+      .set('ticketPriorityId', ticketPriorityId);
+
+    return this.http.put(
+      `${this.apiUrl}/priority`,
+      {},
+      { ...this.getAuthHeaders(), params }
+    );
+  }
 }

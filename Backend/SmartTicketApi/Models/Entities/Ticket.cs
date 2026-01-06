@@ -14,9 +14,10 @@ namespace SmartTicketApi.Models.Entities
         public DateTime? ResolvedAt { get; set; }
         public string? ResolutionDetails { get; set; }
 
-        public bool IsEscalated { get; set; }
+        public bool IsEscalated { get; set; } = false;
+        public bool IsReopened { get; set; } = false;
 
-        // Foreign Keys
+        // Navigation Properties
         public int CreatedById { get; set; }
         public User CreatedBy { get; set; }
 

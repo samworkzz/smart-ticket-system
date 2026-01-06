@@ -38,6 +38,7 @@ export class ReportsComponent implements OnInit {
     performanceData: any[] = [];
 
     managerReport: any = null;
+    errorMessage: string = '';
 
     constructor(private ticketService: TicketService, private cdr: ChangeDetectorRef) { }
 
@@ -47,6 +48,7 @@ export class ReportsComponent implements OnInit {
 
     loadMetrics(): void {
         this.isLoading = true;
+        this.errorMessage = '';
 
         // Load basic metrics
         this.ticketService.getMetrics().subscribe({
@@ -68,7 +70,9 @@ export class ReportsComponent implements OnInit {
             },
             error: (err) => {
                 console.error('Failed to load manager reports', err);
+                this.errorMessage = 'Failed to load reports. ' + (err.error?.message || err.statusText || 'Unknown error');
                 this.isLoading = false;
+                this.cdr.detectChanges();
             }
         });
     }

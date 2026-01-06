@@ -73,7 +73,7 @@
                         <mat-select (selectionChange)="assign(element.ticketId, $event.value)"
                           placeholder="Select Agent">
                           <mat-option *ngFor="let a of agents" [value]="a.agentId">
-                            {{ a.name }} ({{ a.assignedTicketCount }})
+                            {{ a.agentName }} ({{ a.totalAssigned }})
                           </mat-option>
                         </mat-select>
                       </mat-form-field>
@@ -101,6 +101,95 @@
 
                 <div *ngIf="!isLoading && unassignedTickets.length === 0" class="empty-state-table">
                   No unassigned tickets.
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+
+        <!-- Tab 1.5: Escalated -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span [matBadge]="escalatedTickets.length" matBadgeColor="warn"
+              [matBadgeHidden]="escalatedTickets.length === 0" matBadgeOverlap="false">Escalated Tickets</span>
+          </ng-template>
+          <ng-template matTabContent>
+            <div class="tab-content-wrapper escalated-wrapper">
+              <div class="section-header">
+                <h3 class="warn-text">⚠️ Escalated Tickets <span class="badge-count">{{escalatedTickets.length}}</span>
+                </h3>
+                <p class="subtitle warn-text">These tickets have breached SLA. Reassign or increase priority
+                  immediately.</p>
+              </div>
+
+              <div class="mat-elevation-z2 table-container escalated-table-container">
+                <table mat-table [dataSource]="escalatedTickets">
+
+                  <!-- ID -->
+                  <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef> ID </th>
+                    <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
+                  </ng-container>
+
+                  <!-- Title -->
+                  <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef> Title </th>
+                    <td mat-cell *matCellDef="let element"> {{element.title}} </td>
+                  </ng-container>
+
+                  <!-- Priority (Editable) -->
+                  <ng-container matColumnDef="priority">
+                    <th mat-header-cell *matHeaderCellDef> Priority </th>
+                    <td mat-cell *matCellDef="let element">
+                      <mat-form-field appearance="outline" class="compact-select">
+                        <mat-select [value]="element.ticketPriorityId"
+                          (selectionChange)="changePriority(element.ticketId, $event.value)">
+                          <mat-option *ngFor="let p of priorities" [value]="p.id">
+                            {{ p.name }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                  </ng-container>
+
+                  <!-- Assigned To (Editable) -->
+                  <ng-container matColumnDef="assignedTo">
+                    <th mat-header-cell *matHeaderCellDef> Assigned Agent </th>
+                    <td mat-cell *matCellDef="let element">
+                      <mat-form-field appearance="outline" class="compact-select">
+                        <mat-select [value]="element.assignedToId"
+                          (selectionChange)="assign(element.ticketId, $event.value)" placeholder="Unassigned">
+                          <mat-option [value]="null">Unassigned</mat-option>
+                          <mat-option *ngFor="let a of agents" [value]="a.agentId">
+                            {{ a.agentName }} ({{ a.totalAssigned }})
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                  </ng-container>
+
+                  <!-- Created -->
+                  <ng-container matColumnDef="createdAt">
+                    <th mat-header-cell *matHeaderCellDef> Created </th>
+                    <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'short'}} </td>
+                  </ng-container>
+
+                  <!-- Actions -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                    <td mat-cell *matCellDef="let element">
+                      <button mat-icon-button color="primary" (click)="viewDetails(element.ticketId)"
+                        matTooltip="View Details">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="escalatedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: escalatedColumns;"></tr>
+                </table>
+                <div *ngIf="!isLoading && escalatedTickets.length === 0" class="empty-state-table">
+                  No escalated tickets! Great job.
                 </div>
               </div>
             </div>
@@ -200,12 +289,12 @@
         <mat-list>
           <div *ngFor="let agent of agents" class="agent-item">
             <div class="agent-info">
-              <span class="agent-name">{{agent.name}}</span>
-              <span class="agent-status">{{agent.assignedTicketCount}} Tickets</span>
+              <span class="agent-name">{{agent.agentName}}</span>
+              <span class="agent-status">{{agent.totalAssigned}} Tickets</span>
             </div>
             <!-- Simple visual indicator of load -->
             <div class="load-indicator">
-              <div class="bar" [style.width.%]="(agent.assignedTicketCount * 10) + 5"></div>
+              <div class="bar" [style.width.%]="(agent.totalAssigned * 10) + 5"></div>
             </div>
           </div>
         </mat-list>

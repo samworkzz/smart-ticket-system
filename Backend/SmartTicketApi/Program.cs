@@ -61,7 +61,7 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ITicketCommentService, TicketCommentService>();
 builder.Services.AddScoped<IManagerService, ManagerService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
-builder.Services.AddScoped<INotificationService, EmailNotificationService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<SLABackgroundService>();
 
 
@@ -110,127 +110,127 @@ app.MapControllers();
 
 // SEED ROLES 
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!context.Roles.Any())
-    {
-        context.Roles.AddRange(
-            new Role { RoleName = "Admin" },
-            new Role { RoleName = "SupportManager" },
-            new Role { RoleName = "SupportAgent" },
-            new Role { RoleName = "EndUser" }
-        );
+//     if (!context.Roles.Any())
+//     {
+//         context.Roles.AddRange(
+//             new Role { RoleName = "Admin" },
+//             new Role { RoleName = "SupportManager" },
+//             new Role { RoleName = "SupportAgent" },
+//             new Role { RoleName = "EndUser" }
+//         );
 
-        context.SaveChanges();
-    }
-}
+//         context.SaveChanges();
+//     }
+// }
 
-//SEEDING TICKET STATUS
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// //SEEDING TICKET STATUS
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!context.TicketStatuses.Any())
-    {
-        context.TicketStatuses.AddRange(
-            new TicketStatus { StatusName = "Created" },
-            new TicketStatus { StatusName = "Assigned" },
-            new TicketStatus { StatusName = "In Progress" },
-            new TicketStatus { StatusName = "Resolved" },
-            new TicketStatus { StatusName = "Closed" }
-        );
+//     if (!context.TicketStatuses.Any())
+//     {
+//         context.TicketStatuses.AddRange(
+//             new TicketStatus { StatusName = "Created" },
+//             new TicketStatus { StatusName = "Assigned" },
+//             new TicketStatus { StatusName = "In Progress" },
+//             new TicketStatus { StatusName = "Resolved" },
+//             new TicketStatus { StatusName = "Closed" }
+//         );
 
-        context.SaveChanges();
-    }
-}
+//         context.SaveChanges();
+//     }
+// }
 
-//SEEDING TICKET PRIORITIES
+// //SEEDING TICKET PRIORITIES
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!context.TicketPriorities.Any())
-    {
-        context.TicketPriorities.AddRange(
-            new TicketPriority { PriorityName = "Low" },
-            new TicketPriority { PriorityName = "Medium" },
-            new TicketPriority { PriorityName = "High" }
-        );
+//     if (!context.TicketPriorities.Any())
+//     {
+//         context.TicketPriorities.AddRange(
+//             new TicketPriority { PriorityName = "Low" },
+//             new TicketPriority { PriorityName = "Medium" },
+//             new TicketPriority { PriorityName = "High" }
+//         );
 
-        context.SaveChanges();
-    }
-}
+//         context.SaveChanges();
+//     }
+// }
 
-//SEED TICKET CATEGORIES
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// //SEED TICKET CATEGORIES
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!context.TicketCategories.Any())
-    {
-        context.TicketCategories.AddRange(
-            new TicketCategory { CategoryName = "Software" },
-            new TicketCategory { CategoryName = "Hardware" },
-            new TicketCategory { CategoryName = "Network" }
-        );
+//     if (!context.TicketCategories.Any())
+//     {
+//         context.TicketCategories.AddRange(
+//             new TicketCategory { CategoryName = "Software" },
+//             new TicketCategory { CategoryName = "Hardware" },
+//             new TicketCategory { CategoryName = "Network" }
+//         );
 
-        context.SaveChanges();
-    }
-}
-//SEED SLA DATA
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//         context.SaveChanges();
+//     }
+// }
+// //SEED SLA DATA
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!context.SLAs.Any())
-    {
-        var low = context.TicketPriorities.First(p => p.PriorityName == "Low");
-        var medium = context.TicketPriorities.First(p => p.PriorityName == "Medium");
-        var high = context.TicketPriorities.First(p => p.PriorityName == "High");
+//     if (!context.SLAs.Any())
+//     {
+//         var low = context.TicketPriorities.First(p => p.PriorityName == "Low");
+//         var medium = context.TicketPriorities.First(p => p.PriorityName == "Medium");
+//         var high = context.TicketPriorities.First(p => p.PriorityName == "High");
 
-        context.SLAs.AddRange(
-            new SLA { TicketPriorityId = low.TicketPriorityId, ResponseHours = 48 },
-            new SLA { TicketPriorityId = medium.TicketPriorityId, ResponseHours = 24 },
-            new SLA { TicketPriorityId = high.TicketPriorityId, ResponseHours = 4 }
-        );
+//         context.SLAs.AddRange(
+//             new SLA { TicketPriorityId = low.TicketPriorityId, ResponseHours = 48 },
+//             new SLA { TicketPriorityId = medium.TicketPriorityId, ResponseHours = 24 },
+//             new SLA { TicketPriorityId = high.TicketPriorityId, ResponseHours = 4 }
+//         );
 
-        context.SaveChanges();
-    }
-}
+//         context.SaveChanges();
+//     }
+// }
 
-//SEED USERS
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var passwordHasher = new PasswordHasher<User>();
+// //SEED USERS
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     var passwordHasher = new PasswordHasher<User>();
 
-    void SeedUser(string name, string email, string roleName)
-    {
-        if (context.Users.Any(u => u.Email == email))
-            return;
+//     void SeedUser(string name, string email, string roleName)
+//     {
+//         if (context.Users.Any(u => u.Email == email))
+//             return;
 
-        var role = context.Roles.First(r => r.RoleName == roleName);
+//         var role = context.Roles.First(r => r.RoleName == roleName);
 
-        var user = new User
-        {
-            Name = name,
-            Email = email,
-            RoleId = role.RoleId
-        };
+//         var user = new User
+//         {
+//             Name = name,
+//             Email = email,
+//             RoleId = role.RoleId
+//         };
 
-        user.PasswordHash = passwordHasher.HashPassword(user, "Password@123");
+//         user.PasswordHash = passwordHasher.HashPassword(user, "Password@123");
 
-        context.Users.Add(user);
-        context.SaveChanges();
-    }
+//         context.Users.Add(user);
+//         context.SaveChanges();
+//     }
 
-    SeedUser("System Admin", "admin@system.com", "Admin");
-    SeedUser("Support Manager", "manager@system.com", "SupportManager");
-    SeedUser("Support Agent", "agent@system.com", "SupportAgent");
-}
+//     SeedUser("System Admin", "admin@system.com", "Admin");
+//     SeedUser("Support Manager", "manager@system.com", "SupportManager");
+//     SeedUser("Support Agent", "agent@system.com", "SupportAgent");
+// }
 
 
 app.Run();

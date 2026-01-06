@@ -50,7 +50,6 @@ namespace SmartTicketApi.Services.Tickets
                     .Include(t => t.TicketStatus)
                     .Include(t => t.TicketPriority)
                     .Where(t => !t.IsEscalated && 
-                                t.AssignedAt != null && 
                                 t.TicketStatus.StatusName != "Resolved" && 
                                 t.TicketStatus.StatusName != "Closed")
                     .ToListAsync();
@@ -62,7 +61,7 @@ namespace SmartTicketApi.Services.Tickets
                     var sla = slas.FirstOrDefault(s => s.TicketPriorityId == ticket.TicketPriorityId);
                     if (sla == null) continue;
 
-                    var elapsedHours = (DateTime.UtcNow - ticket.AssignedAt.Value).TotalHours;
+                    var elapsedHours = (DateTime.UtcNow - ticket.CreatedAt).TotalHours;
 
                     if (elapsedHours > sla.ResponseHours)
                     {

@@ -69,7 +69,16 @@ namespace SmartTicketApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _ticketService.UpdateTicketStatusAsync(dto);
+            var role = User.FindFirstValue(ClaimTypes.Role) ?? "EndUser";
+
+            try 
+            {
+                await _ticketService.UpdateTicketStatusAsync(dto, role);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
 
             return Ok(new
             {
@@ -80,7 +89,7 @@ namespace SmartTicketApi.Controllers
 
         // Admin: Update Ticket Priority
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SupportManager")]
         [HttpPut("priority")]
         public async Task<IActionResult> UpdateTicketPriority(
             [FromQuery] int ticketId,
@@ -156,12 +165,28 @@ namespace SmartTicketApi.Controllers
             return Ok(metrics);
         }
 
-        [Authorize(Roles = "SupportManager")]
+        [Authorize(Roles = "SupportManager,SupportAgent")]
         [HttpGet("reports/manager")]
         public async Task<IActionResult> GetManagerReports()
         {
             var report = await _ticketService.GetManagerReportsAsync();
             return Ok(report);
+        }
+
+        [Authorize(Roles = "SupportAgent")]
+        [HttpGet("reports/agent")]
+        public async Task<IActionResult> GetAgentReport()
+        {
+            try 
+            {
+                var agentId = GetUserIdFromToken();
+                var report = await _ticketService.GetAgentReportAsync(agentId);
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         private int GetUserIdFromToken()

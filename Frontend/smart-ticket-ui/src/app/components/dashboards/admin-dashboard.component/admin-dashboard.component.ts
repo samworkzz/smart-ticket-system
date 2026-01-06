@@ -47,7 +47,6 @@ export class AdminDashboardComponent implements OnInit {
   availableRoles: any[] = [];
 
   newCategoryName = '';
-  newPriorityName = '';
 
   isLoading = false;
 
@@ -133,26 +132,6 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.deleteCategory(id).subscribe({
       next: () => this.loadData(),
       error: (err) => alert(err.error?.Message || 'Failed to delete category')
-    });
-  }
-
-  // Priorities
-  addPriority(): void {
-    if (!this.newPriorityName) return;
-    this.adminService.createPriority(this.newPriorityName).subscribe({
-      next: () => {
-        this.newPriorityName = '';
-        this.loadData();
-      },
-      error: (err) => alert(err.error?.Message || 'Failed to add priority')
-    });
-  }
-
-  deletePriority(id: number): void {
-    if (!confirm('Are you sure?')) return;
-    this.adminService.deletePriority(id).subscribe({
-      next: () => this.loadData(),
-      error: (err) => alert(err.error?.Message || 'Failed to delete priority')
     });
   }
 

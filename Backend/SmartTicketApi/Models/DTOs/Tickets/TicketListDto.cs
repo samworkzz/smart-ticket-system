@@ -9,6 +9,8 @@
         public string Category { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? AssignedTo { get; set; }
+        public int? AssignedToId { get; set; }
+        public int TicketPriorityId { get; set; }
         public bool IsEscalated { get; set; }
     }
 

@@ -1,7 +1,7 @@
 <header class="app-navbar" *ngIf="isLoggedIn()">
 
   <div class="nav-left">
-    <span class="brand">Smart Ticket System</span>
+    <span class="brand">CHUBB TICKET SYSTEM</span>
 
     <ng-container *ngIf="getRole() === 'EndUser'">
       <a routerLink="/enduser">My Tickets</a>
@@ -10,6 +10,7 @@
 
     <ng-container *ngIf="getRole() === 'SupportAgent'">
       <a routerLink="/agent">Assigned Tickets</a>
+      <a routerLink="/agent-reports">Reports</a>
     </ng-container>
 
     <ng-container *ngIf="getRole() === 'SupportManager'">
@@ -19,10 +20,12 @@
 
     <ng-container *ngIf="getRole() === 'Admin'">
       <a routerLink="/admin">Admin Panel</a>
+      <a routerLink="/admin-reports">Reports</a>
     </ng-container>
   </div>
 
   <div class="nav-right">
+    <app-notifications></app-notifications>
     <button class="logout-btn" (click)="logout()">Logout</button>
   </div>
 

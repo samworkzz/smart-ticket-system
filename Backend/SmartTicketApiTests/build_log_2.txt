@@ -1,0 +1,22 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SmartTicketApi -> C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApi\bin\Debug\net8.0\SmartTicketApi.dll
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(13,12): error CS0579: Duplicate 'System.Reflection.AssemblyCompanyAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(14,12): error CS0579: Duplicate 'System.Reflection.AssemblyConfigurationAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(15,12): error CS0579: Duplicate 'System.Reflection.AssemblyFileVersionAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(17,12): error CS0579: Duplicate 'System.Reflection.AssemblyProductAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(18,12): error CS0579: Duplicate 'System.Reflection.AssemblyTitleAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(19,12): error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+
+Build FAILED.
+
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(13,12): error CS0579: Duplicate 'System.Reflection.AssemblyCompanyAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(14,12): error CS0579: Duplicate 'System.Reflection.AssemblyConfigurationAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(15,12): error CS0579: Duplicate 'System.Reflection.AssemblyFileVersionAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(17,12): error CS0579: Duplicate 'System.Reflection.AssemblyProductAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(18,12): error CS0579: Duplicate 'System.Reflection.AssemblyTitleAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\obj\Debug\net8.0\SmartTicketApiTests.AssemblyInfo.cs(19,12): error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute' attribute [C:\Users\hp\SmartTicketSystem\Backend\SmartTicketApiTests\SmartTicketApiTests.csproj]
+    0 Warning(s)
+    6 Error(s)
+
+Time Elapsed 00:00:02.06

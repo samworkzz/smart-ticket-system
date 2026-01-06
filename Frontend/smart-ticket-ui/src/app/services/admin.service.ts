@@ -49,30 +49,9 @@ export class AdminService {
     }
 
     // Priorities
+    // Priorities
     getPriorities(): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/priorities`, this.getAuthHeaders());
-    }
-
-    createPriority(name: string): Observable<any> {
-        return this.http.post(`${this.apiUrl}/priorities`, `"${name}"`, {
-            headers: {
-                ...this.getAuthHeaders().headers,
-                'Content-Type': 'application/json'
-            }
-        });
-    }
-
-    updatePriority(id: number, name: string): Observable<any> {
-        return this.http.put(`${this.apiUrl}/priorities/${id}`, `"${name}"`, {
-            headers: {
-                ...this.getAuthHeaders().headers,
-                'Content-Type': 'application/json'
-            }
-        });
-    }
-
-    deletePriority(id: number): Observable<any> {
-        return this.http.delete(`${this.apiUrl}/priorities/${id}`, this.getAuthHeaders());
     }
 
     // SLAs
@@ -112,5 +91,9 @@ export class AdminService {
                 'Content-Type': 'application/json'
             }
         });
+    }
+
+    getAdminReport(): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/reports`, this.getAuthHeaders());
     }
 }

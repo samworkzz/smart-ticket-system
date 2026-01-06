@@ -18,9 +18,9 @@ namespace SmartTicketApi.Controllers
             _managerService = managerService;
         }
 
-        // ============================
+        
         // 1️ Get all agents + workload
-        // ============================
+     
         [HttpGet("agents")]
         public async Task<IActionResult> GetAgents()
         {
@@ -28,9 +28,9 @@ namespace SmartTicketApi.Controllers
             return Ok(agents);
         }
 
-        // ============================
+      
         // 2️ Get unassigned tickets
-        // ============================
+        
         [HttpGet("unassigned-tickets")]
         public async Task<IActionResult> GetUnassignedTickets([FromQuery] PagedRequestDto pagination)
         {
@@ -38,9 +38,7 @@ namespace SmartTicketApi.Controllers
             return Ok(tickets);
         }
 
-        // ============================
         // 3️ Assign ticket to agent
-        // ============================
         [HttpPut("assign")]
         public async Task<IActionResult> AssignTicket([FromBody] AssignTicketDto dto)
         {
@@ -60,9 +58,7 @@ namespace SmartTicketApi.Controllers
             }
         }
 
-        // ============================
         // 🔧 Debug endpoint (optional)
-        // ============================
         [HttpGet("ping")]
         [AllowAnonymous]
         public IActionResult Ping()

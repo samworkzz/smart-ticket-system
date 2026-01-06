@@ -43,23 +43,6 @@ namespace SmartTicketApi.Controllers
         [HttpGet("priorities")]
         public async Task<IActionResult> GetPriorities() => Ok(await _adminService.GetPrioritiesAsync());
 
-        [HttpPost("priorities")]
-        public async Task<IActionResult> CreatePriority([FromBody] string name) => Ok(await _adminService.CreatePriorityAsync(name));
-
-        [HttpPut("priorities/{id}")]
-        public async Task<IActionResult> UpdatePriority(int id, [FromBody] string name)
-        {
-            await _adminService.UpdatePriorityAsync(id, name);
-            return Ok(new { Message = "Priority updated" });
-        }
-
-        [HttpDelete("priorities/{id}")]
-        public async Task<IActionResult> DeletePriority(int id)
-        {
-            await _adminService.DeletePriorityAsync(id);
-            return Ok(new { Message = "Priority deleted" });
-        }
-
         // --- SLAs ---
         [HttpGet("slas")]
         public async Task<IActionResult> GetSLAs() => Ok(await _adminService.GetSLAsAsync());
@@ -84,5 +67,8 @@ namespace SmartTicketApi.Controllers
 
         [HttpGet("roles")]
         public async Task<IActionResult> GetRoles() => Ok(await _adminService.GetRolesAsync());
+
+        [HttpGet("reports")]
+        public async Task<IActionResult> GetAdminReport() => Ok(await _adminService.GetAdminReportAsync());
     }
 }

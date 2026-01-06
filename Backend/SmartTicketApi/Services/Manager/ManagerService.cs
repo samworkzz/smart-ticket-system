@@ -32,8 +32,8 @@ namespace SmartTicketApi.Services.Manager
             var result = agents.Select(agent => new AgentWorkloadDto
             {
                 AgentId = agent.UserId,
-                Name = agent.Name,
-                AssignedTicketCount = _context.Tickets
+                AgentName = agent.Name,
+                TotalAssigned = _context.Tickets
                     .Count(t => t.AssignedToId == agent.UserId)
             }).ToList();
 

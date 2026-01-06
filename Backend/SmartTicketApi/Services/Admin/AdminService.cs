@@ -48,32 +48,6 @@ namespace SmartTicketApi.Services.Admin
         // Priorities
         public async Task<List<TicketPriority>> GetPrioritiesAsync() => await _context.TicketPriorities.ToListAsync();
 
-        public async Task<int> CreatePriorityAsync(string name)
-        {
-            var priority = new TicketPriority { PriorityName = name };
-            _context.TicketPriorities.Add(priority);
-            await _context.SaveChangesAsync();
-            return priority.TicketPriorityId;
-        }
-
-        public async Task UpdatePriorityAsync(int id, string name)
-        {
-            var priority = await _context.TicketPriorities.FindAsync(id);
-            if (priority == null) throw new Exception("Priority not found");
-            priority.PriorityName = name;
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeletePriorityAsync(int id)
-        {
-            var priority = await _context.TicketPriorities.FindAsync(id);
-            if (priority == null) throw new Exception("Priority not found");
-            if (await _context.Tickets.AnyAsync(t => t.TicketPriorityId == id))
-                throw new Exception("Cannot delete priority with associated tickets");
-            _context.TicketPriorities.Remove(priority);
-            await _context.SaveChangesAsync();
-        }
-
         // SLAs
         public async Task<List<SLA>> GetSLAsAsync() => await _context.SLAs.Include(s => s.TicketPriority).ToListAsync();
 
@@ -118,22 +92,10 @@ namespace SmartTicketApi.Services.Admin
             var role = await _context.Roles.FindAsync(dto.RoleId);
             if (role == null) throw new Exception("Role not found");
 
-            // Role Restriction: Admin can only assign SupportManager or SupportAgent
-            if (role.RoleName != "SupportManager" && role.RoleName != "SupportAgent" && role.RoleName != "EndUser")
+            // Role Restriction: Admin can assign SupportManager, SupportAgent OR EndUser (as per request)
+            if (role.RoleName == "Admin")
             {
-                 // Small adjustment: allowing revert to EndUser might be useful too, 
-                 // but strictly following "make users as support manager or agent".
-                 // Let's stick to the user's specific text: "support manager or agent"
-                 if (role.RoleName == "Admin")
-                 {
-                     throw new Exception("Cannot assign Admin role through this interface.");
-                 }
-            }
-            
-            // Re-evaluating based on "admin can make users as support manager or agent"
-            if (role.RoleName != "SupportManager" && role.RoleName != "SupportAgent")
-            {
-                 throw new Exception("Admins can only assign 'Support Manager' or 'Support Agent' roles.");
+                 throw new Exception("Cannot assign Admin role through this interface.");
             }
 
             user.RoleId = dto.RoleId;
@@ -149,6 +111,69 @@ namespace SmartTicketApi.Services.Admin
                     RoleName = r.RoleName
                 })
                 .ToListAsync();
+        }
+
+        public async Task<AdminReportDto> GetAdminReportAsync()
+        {
+            var report = new AdminReportDto();
+
+            // 1. Global Ticket Stats
+            var allTickets = await _context.Tickets
+                .AsNoTracking()
+                .Include(t => t.TicketStatus)
+                .Include(t => t.AssignedTo)
+                .ToListAsync();
+
+            report.TotalTickets = allTickets.Count;
+            report.OpenTickets = allTickets.Count(t => t.TicketStatus.StatusName == "Created" || t.TicketStatus.StatusName == "Assigned" || t.TicketStatus.StatusName == "In Progress");
+            report.ResolvedTickets = allTickets.Count(t => t.TicketStatus.StatusName == "Resolved" || t.TicketStatus.StatusName == "Closed");
+            report.EscalatedTickets = allTickets.Count(t => t.IsEscalated);
+
+            // 2. Manager Summaries (Just list for now)
+            var managers = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .Where(u => u.Role.RoleName == "SupportManager")
+                .ToListAsync();
+
+            report.ManagerSummaries = managers.Select(m => new ManagerSummaryDto
+            {
+                ManagerId = m.UserId,
+                Name = m.Name,
+                Email = m.Email
+            }).ToList();
+
+            // 3. Agent Summaries (Performance)
+            // Reusing logic from TicketService/ManagerReport
+            // Filter: Role == SupportAgent
+            var agents = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .Where(u => u.Role.RoleName == "SupportAgent")
+                .ToListAsync();
+
+            // Pre-fetch resolved tickets for calc
+            var resolvedTickets = allTickets.Where(t => t.ResolvedAt.HasValue && t.AssignedToId.HasValue).ToList();
+
+            report.AgentSummaries = agents.Select(agent => 
+            {
+                var agentResolved = resolvedTickets.Where(t => t.AssignedToId == agent.UserId).ToList();
+                double avgTime = 0;
+                if (agentResolved.Any())
+                {
+                    avgTime = agentResolved.Average(t => (t.ResolvedAt!.Value - t.CreatedAt).TotalHours);
+                }
+
+                return new SmartTicketApi.Models.DTOs.Manager.AgentPerformanceDto
+                {
+                    AgentId = agent.UserId,
+                    AgentName = agent.Name,
+                    ResolvedCount = agentResolved.Count,
+                    AvgResolutionHours = Math.Round(avgTime, 1)
+                };
+            }).ToList();
+
+            return report;
         }
     }
 }

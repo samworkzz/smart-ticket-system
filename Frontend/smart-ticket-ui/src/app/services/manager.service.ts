@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { AgentWorkload, UnassignedTicket, AssignTicketPayload } from '../models/manager.models';
+import { AgentWorkloadDto, UnassignedTicket, AssignTicketPayload } from '../models/manager.models';
 import { PagedRequest, PagedResponse } from '../models/shared.models';
 import { Observable } from 'rxjs';
 
@@ -20,8 +20,8 @@ export class ManagerService {
     };
   }
 
-  getAgents(): Observable<AgentWorkload[]> {
-    return this.http.get<AgentWorkload[]>(`${this.apiUrl}/agents`, this.getAuthHeaders());
+  getAgents(): Observable<AgentWorkloadDto[]> {
+    return this.http.get<AgentWorkloadDto[]>(`${this.apiUrl}/agents`, this.getAuthHeaders());
   }
 
   getUnassignedTickets(pagination?: PagedRequest): Observable<PagedResponse<UnassignedTicket>> {

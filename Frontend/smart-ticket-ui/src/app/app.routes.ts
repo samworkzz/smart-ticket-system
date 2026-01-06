@@ -31,6 +31,12 @@ export const routes: Routes = [
     data: { role: 'SupportAgent' }
   },
   {
+    path: 'admin-reports',
+    loadComponent: () => import('./components/reports/admin-report/admin-report.component').then(m => m.AdminReportComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'Admin' }
+  },
+  {
     path: 'ticket/:id',
     loadComponent: () => import('./components/ticket-details/ticket-details.component').then(m => m.TicketDetailsComponent),
     canActivate: [authGuard] // Accessible to all roles (Backend handles specific restrictions)
@@ -46,6 +52,12 @@ export const routes: Routes = [
     loadComponent: () => import('./components/reports/reports.component').then(m => m.ReportsComponent),
     canActivate: [authGuard, roleGuard],
     data: { role: ['Admin', 'SupportManager'] }
+  },
+  {
+    path: 'agent-reports',
+    loadComponent: () => import('./components/reports/agent-report/agent-report.component').then(m => m.AgentReportComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'SupportAgent' }
   },
 
   {

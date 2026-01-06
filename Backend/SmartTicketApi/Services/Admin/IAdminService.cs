@@ -14,9 +14,6 @@ namespace SmartTicketApi.Services.Admin
 
         // Priorities
         Task<List<TicketPriority>> GetPrioritiesAsync();
-        Task<int> CreatePriorityAsync(string name);
-        Task UpdatePriorityAsync(int id, string name);
-        Task DeletePriorityAsync(int id);
 
         // SLAs
         Task<List<SLA>> GetSLAsAsync();
@@ -26,5 +23,8 @@ namespace SmartTicketApi.Services.Admin
         Task<PagedResponseDto<UserListDto>> GetUsersWithRolesAsync(PagedRequestDto pagination);
         Task UpdateUserRoleAsync(UpdateUserRoleDto dto);
         Task<List<RoleDto>> GetRolesAsync();
+
+        // Reports
+        Task<AdminReportDto> GetAdminReportAsync();
     }
 }

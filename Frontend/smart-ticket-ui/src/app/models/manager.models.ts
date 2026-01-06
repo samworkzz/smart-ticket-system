@@ -1,8 +1,4 @@
-export interface AgentWorkload {
-    agentId: number;
-    name: string;
-    assignedTicketCount: number;
-}
+// AgentWorkload removed. Use AgentWorkloadDto instead.
 
 export interface UnassignedTicket {
     ticketId: number;

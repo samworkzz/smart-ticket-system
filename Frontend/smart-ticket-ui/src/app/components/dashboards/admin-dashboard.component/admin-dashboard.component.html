@@ -43,18 +43,11 @@
                 </div>
             </mat-tab>
 
+
             <!-- Priorities Tab -->
             <mat-tab label="Priorities">
                 <div class="tab-content">
-                    <div class="add-action">
-                        <mat-form-field appearance="outline">
-                            <mat-label>New Priority</mat-label>
-                            <input matInput [(ngModel)]="newPriorityName" placeholder="e.g. Critical">
-                        </mat-form-field>
-                        <button mat-raised-button color="primary" [disabled]="!newPriorityName"
-                            (click)="addPriority()">Add</button>
-                    </div>
-
+                    <p class="hint">* New priorities cannot be added.</p>
                     <table mat-table [dataSource]="priorities" class="mat-elevation-z1">
                         <ng-container matColumnDef="id">
                             <th mat-header-cell *matHeaderCellDef> ID </th>
@@ -64,18 +57,9 @@
                             <th mat-header-cell *matHeaderCellDef> Name </th>
                             <td mat-cell *matCellDef="let element"> {{element.priorityName}} </td>
                         </ng-container>
-                        <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef> Actions </th>
-                            <td mat-cell *matCellDef="let element">
-                                <button mat-icon-button color="warn" (click)="deletePriority(element.ticketPriorityId)"
-                                    matTooltip="Delete Priority">
-                                    <mat-icon>delete</mat-icon>
-                                </button>
-                            </td>
-                        </ng-container>
 
-                        <tr mat-header-row *matHeaderRowDef="['id', 'name', 'actions']"></tr>
-                        <tr mat-row *matRowDef="let row; columns: ['id', 'name', 'actions'];"></tr>
+                        <tr mat-header-row *matHeaderRowDef="['id', 'name']"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['id', 'name'];"></tr>
                     </table>
                 </div>
             </mat-tab>

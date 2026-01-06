@@ -1,5 +1,12 @@
 <div class="details-container" *ngIf="ticket; else loadingOrError">
 
+    <!-- SLA Breach Banner -->
+    <div class="breach-banner fadeIn" *ngIf="ticket.isEscalated">
+        <mat-icon>warning</mat-icon>
+        <span><strong>SLA BREACH:</strong> This ticket has exceeded its resolution time limit and has been
+            escalated.</span>
+    </div>
+
     <!-- Header Section -->
     <mat-card class="ticket-header-card fadeIn">
         <div class="header-row">

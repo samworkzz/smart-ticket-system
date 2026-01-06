@@ -22,6 +22,37 @@ namespace SmartTicketApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartTicketApi.Models.Entities.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TicketId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("SmartTicketApi.Models.Entities.Role", b =>
                 {
                     b.Property<int>("RoleId")
@@ -86,6 +117,9 @@ namespace SmartTicketApi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsEscalated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReopened")
                         .HasColumnType("bit");
 
                     b.Property<string>("ResolutionDetails")
@@ -265,6 +299,17 @@ namespace SmartTicketApi.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("SmartTicketApi.Models.Entities.Notification", b =>
+                {
+                    b.HasOne("SmartTicketApi.Models.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartTicketApi.Models.Entities.SLA", b =>

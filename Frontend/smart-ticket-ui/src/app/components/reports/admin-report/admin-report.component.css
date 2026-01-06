@@ -1,0 +1,45 @@
+.report-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.summary-card mat-card-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #1976d2;
+}
+
+.summary-card.highlight-bad mat-card-title {
+    color: #F44336;
+}
+
+.chart-container {
+    height: 300px;
+    margin-bottom: 30px;
+}
+
+.full-width-table {
+    width: 100%;
+}
+
+.divider {
+    margin: 40px 0;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #444;
+}

@@ -2,10 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 
+import { NotificationsComponent } from '../../notifications/notifications.component';
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, NotificationsComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
@@ -13,7 +15,7 @@ export class NavbarComponent {
 
   private isBrowser = typeof window !== 'undefined';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   isLoggedIn(): boolean {
     if (!this.isBrowser) return false;
