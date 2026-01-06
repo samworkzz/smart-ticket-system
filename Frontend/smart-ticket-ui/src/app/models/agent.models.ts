@@ -6,6 +6,7 @@ export interface AssignedTicket {
     priority: string;
     status: string;
     createdAt: string;
+    isEscalated: boolean;
 }
 
 export const TicketStatus = {

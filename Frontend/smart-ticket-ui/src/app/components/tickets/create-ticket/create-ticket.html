@@ -5,54 +5,33 @@
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Title</mat-label>
-      <input
-        matInput
-        name="title"
-        [(ngModel)]="title"
-        required
-      />
+      <input matInput name="title" [(ngModel)]="title" required />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Description</mat-label>
-      <textarea
-        matInput
-        rows="4"
-        name="description"
-        [(ngModel)]="description"
-        required
-      ></textarea>
+      <textarea matInput rows="4" name="description" [(ngModel)]="description" required></textarea>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Category</mat-label>
-      <mat-select
-        name="category"
-        [(ngModel)]="ticketCategoryId"
-      >
-        <mat-option [value]="1">Software</mat-option>
-        <mat-option [value]="2">Hardware</mat-option>
-        <mat-option [value]="3">Network</mat-option>
+      <mat-select name="category" [(ngModel)]="ticketCategoryId">
+        <mat-option [value]="1"><span class="badge category">Software</span></mat-option>
+        <mat-option [value]="2"><span class="badge category">Hardware</span></mat-option>
+        <mat-option [value]="3"><span class="badge category">Network</span></mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Priority</mat-label>
-      <mat-select
-        name="priority"
-        [(ngModel)]="ticketPriorityId"
-      >
-        <mat-option [value]="1">Low</mat-option>
-        <mat-option [value]="2">Medium</mat-option>
-        <mat-option [value]="3">High</mat-option>
+      <mat-select name="priority" [(ngModel)]="ticketPriorityId">
+        <mat-option [value]="1"><span class="badge priority low">Low</span></mat-option>
+        <mat-option [value]="2"><span class="badge priority medium">Medium</span></mat-option>
+        <mat-option [value]="3"><span class="badge priority high">High</span></mat-option>
       </mat-select>
     </mat-form-field>
 
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-    >
+    <button mat-raised-button color="primary" type="submit">
       Submit Ticket
     </button>
 

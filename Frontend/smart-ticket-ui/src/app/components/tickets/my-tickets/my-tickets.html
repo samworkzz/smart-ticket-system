@@ -8,77 +8,79 @@
   </div>
 
   <div class="toolbar">
-  <button mat-stroked-button color="primary" (click)="loadTickets()">
-    Refresh
-  </button>
-</div>
+    <button mat-stroked-button color="primary" (click)="loadTickets()">
+      Refresh
+    </button>
+  </div>
 
   <!-- Tickets Table -->
-  <table
-    mat-table
-    [dataSource]="tickets"
-    class="mat-elevation-z2"
-    *ngIf="!loading && tickets.length > 0"
-  >
+  <div class="table-container mat-elevation-z2" *ngIf="!loading || tickets.length > 0">
+    <table mat-table [dataSource]="tickets" matSort (matSortChange)="onSortChange($event)" matSortActive="CreatedAt"
+      matSortDirection="desc" matSortDisableClear>
 
-    <!-- Ticket ID -->
-    <ng-container matColumnDef="ticketId">
-      <th mat-header-cell *matHeaderCellDef>ID</th>
-      <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
-    </ng-container>
+      <!-- Ticket ID -->
+      <ng-container matColumnDef="ticketId">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketId">ID</th>
+        <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
+      </ng-container>
 
-    <!-- Title -->
-    <ng-container matColumnDef="title">
-      <th mat-header-cell *matHeaderCellDef>Title</th>
-      <td mat-cell *matCellDef="let t">{{ t.title }}</td>
-    </ng-container>
+      <!-- Title -->
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="Title">Title</th>
+        <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+      </ng-container>
 
-    <!-- Category -->
-    <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef>Category</th>
-      <td mat-cell *matCellDef="let t">{{ t.category }}</td>
-    </ng-container>
+      <!-- Category -->
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketCategory.CategoryName">Category</th>
+        <td mat-cell *matCellDef="let t">{{ t.category }}</td>
+      </ng-container>
 
-    <!-- Priority -->
-    <ng-container matColumnDef="priority">
-      <th mat-header-cell *matHeaderCellDef>Priority</th>
-      <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
-    </ng-container>
+      <!-- Priority -->
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketPriority.PriorityName">Priority</th>
+        <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
+      </ng-container>
 
-    <!-- Status -->
-    <!-- Status -->
-<ng-container matColumnDef="status">
-  <th mat-header-cell *matHeaderCellDef>Status</th>
-  <td mat-cell *matCellDef="let t">
-    <span class="status-badge" [ngClass]="t.status">
-      {{ t.status }}
-    </span>
-  </td>
-</ng-container>
+      <!-- Status -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketStatus.StatusName">Status</th>
+        <td mat-cell *matCellDef="let t">
+          <div class="status-cell">
+            <span class="status-badge" [ngClass]="t.status">
+              {{ t.status }}
+            </span>
+            <span class="breach-badge" *ngIf="t.isEscalated" title="SLA Breached">!</span>
+          </div>
+        </td>
+      </ng-container>
 
-    <!-- Created At -->
-    <ng-container matColumnDef="createdAt">
-      <th mat-header-cell *matHeaderCellDef>Created</th>
-      <td mat-cell *matCellDef="let t">
-        {{ t.createdAt | date:'short' }}
-      </td>
-    </ng-container>
+      <!-- Created At -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="CreatedAt">Created</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.createdAt | date:'short' }}
+        </td>
+      </ng-container>
 
-    <ng-container matColumnDef="actions">
-  <th mat-header-cell *matHeaderCellDef>Actions</th>
-  <td mat-cell *matCellDef="let t">
-    <button mat-button color="primary" (click)="openDetails(t)">
-      View
-    </button>
-  </td>
-</ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let t">
+          <button mat-button color="primary" (click)="openDetails(t)">
+            View
+          </button>
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-  </table>
-  <!-- Actions -->
+    </table>
 
+    <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)" showFirstLastButtons>
+    </mat-paginator>
+  </div>
 
   <!-- Empty State -->
   <p *ngIf="!loading && tickets.length === 0" class="empty-text">

@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-register',
@@ -16,7 +17,9 @@ import { MatButtonModule } from '@angular/material/button';
     FormsModule,
     MatCardModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    RouterLink
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
@@ -26,6 +29,7 @@ export class RegisterComponent {
   name = '';
   email = '';
   password = '';
+  hidePassword = true;
 
   successMessage = '';
   errorMessage = '';
@@ -33,7 +37,7 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   register() {
     const payload = {
@@ -48,8 +52,9 @@ export class RegisterComponent {
         this.errorMessage = '';
         setTimeout(() => this.router.navigate(['/login']), 500);
       },
-      error: () => {
-        this.errorMessage = 'Registration failed';
+      error: (err) => {
+        // Fix: Use the error message from the backend if available
+        this.errorMessage = err.error?.message || 'Registration failed';
         this.successMessage = '';
       }
     });

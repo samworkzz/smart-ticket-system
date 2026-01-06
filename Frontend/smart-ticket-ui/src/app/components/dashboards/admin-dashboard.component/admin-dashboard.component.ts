@@ -11,6 +11,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { PagedRequest } from '../../../models/shared.models';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -24,7 +29,11 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatFormFieldModule,
     MatCardModule,
-    MatIconModule
+    MatIconModule,
+    MatSelectModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTooltipModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
@@ -34,11 +43,20 @@ export class AdminDashboardComponent implements OnInit {
   categories: any[] = [];
   priorities: any[] = [];
   slas: any[] = [];
+  users: any[] = [];
+  availableRoles: any[] = [];
 
   newCategoryName = '';
   newPriorityName = '';
 
   isLoading = false;
+
+  // Pagination for Users
+  usersTotalCount = 0;
+  usersPageSize = 10;
+  usersPageIndex = 0;
+  usersSortBy = 'Name';
+  usersSortDescending = false;
 
   constructor(
     private authService: AuthService,
@@ -48,6 +66,7 @@ export class AdminDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+    this.loadUsers();
   }
 
   loadData(): void {
@@ -64,6 +83,37 @@ export class AdminDashboardComponent implements OnInit {
         setTimeout(() => this.isLoading = false);
       }
     });
+
+    this.adminService.getRoles().subscribe(res => this.availableRoles = res);
+  }
+
+  loadUsers(): void {
+    const request: PagedRequest = {
+      pageNumber: this.usersPageIndex + 1,
+      pageSize: this.usersPageSize,
+      sortBy: this.usersSortBy,
+      sortDescending: this.usersSortDescending
+    };
+
+    this.adminService.getUsers(request).subscribe({
+      next: (data) => {
+        this.users = data.items;
+        this.usersTotalCount = data.totalCount;
+      },
+      error: (err) => console.error('Failed to load users', err)
+    });
+  }
+
+  onUsersPageChange(event: PageEvent): void {
+    this.usersPageIndex = event.pageIndex;
+    this.usersPageSize = event.pageSize;
+    this.loadUsers();
+  }
+
+  onUsersSortChange(sort: Sort): void {
+    this.usersSortBy = sort.active;
+    this.usersSortDescending = sort.direction === 'desc';
+    this.loadUsers();
   }
 
   // Categories
@@ -111,6 +161,20 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.updateSLA(sla.slaId, sla.responseHours).subscribe({
       next: () => console.log('SLA updated'),
       error: (err) => alert('Failed to update SLA')
+    });
+  }
+
+  // User Management
+  updateUserRole(user: any): void {
+    this.adminService.updateUserRole(user.userId, user.roleId).subscribe({
+      next: (res) => {
+        alert(res.Message || 'User role updated successfully');
+        this.loadUsers(); // Refresh users list
+      },
+      error: (err) => {
+        alert(err.error?.Message || 'Failed to update user role');
+        this.loadUsers(); // Revert UI
+      }
     });
   }
 

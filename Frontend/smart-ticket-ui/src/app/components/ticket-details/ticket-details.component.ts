@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TicketService } from '../../services/ticket.service';
 import { FormsModule } from '@angular/forms';
 import { TicketCommentService } from '../../services/ticket-comment.service';
+import { AuthService } from '../../services/auth.service';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -46,13 +47,12 @@ export class TicketDetailsComponent implements OnInit {
         private route: ActivatedRoute,
         private ticketService: TicketService,
         private commentService: TicketCommentService,
+        private authService: AuthService,
         private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
-        console.log('TicketDetailsComponent initialized');
         const id = this.route.snapshot.paramMap.get('id');
-        console.log('Ticket ID from route:', id);
         if (id) {
             this.loadTicket(Number(id));
         } else {
@@ -62,11 +62,9 @@ export class TicketDetailsComponent implements OnInit {
     }
 
     loadTicket(id: number): void {
-        console.log('Loading ticket details for ID:', id);
         this.isLoading = true;
         this.ticketService.getTicketDetails(id).subscribe({
             next: (data) => {
-                console.log('Ticket data received:', data);
                 this.ticket = data;
                 setTimeout(() => {
                     this.isLoading = false;
@@ -131,11 +129,13 @@ export class TicketDetailsComponent implements OnInit {
     }
 
     canReopen(): boolean {
-        return this.ticket?.status === 'Closed' || this.ticket?.status === 'Resolved';
+        const isEndUser = this.authService.getUserRole() === 'EndUser';
+        return isEndUser && (this.ticket?.status === 'Closed' || this.ticket?.status === 'Resolved');
     }
 
     canCancel(): boolean {
-        return this.ticket?.status !== 'Closed' && this.ticket?.status !== 'Resolved';
+        const isEndUser = this.authService.getUserRole() === 'EndUser';
+        return isEndUser && (this.ticket?.status !== 'Closed' && this.ticket?.status !== 'Resolved');
     }
 
     getPriorityClass(priority: string): string {
@@ -148,6 +148,43 @@ export class TicketDetailsComponent implements OnInit {
     }
 
     getStatusClass(status: string): string {
-        return status?.replace(/\s+/g, '-').toLowerCase() || '';
+        switch (status?.toLowerCase()) {
+            case 'created': return 'status-created';
+            case 'open': return 'status-open';
+            case 'assigned': return 'status-assigned';
+            case 'in progress': return 'status-in-progress';
+            case 'resolved': return 'status-resolved';
+            case 'closed': return 'status-closed';
+            default: return 'status-default';
+        }
+    }
+
+    getLogValue(value: string | number, field: string): string {
+        const valStr = String(value);
+
+        // If it's a Status ID
+        if (field?.includes('Status')) {
+            switch (valStr) {
+                case '1': return 'Created';
+                case '2': return 'Open';
+                case '3': return 'Assigned';
+                case '4': return 'In Progress';
+                case '5': return 'Resolved';
+                case '6': return 'Closed';
+                default: return valStr;
+            }
+        }
+
+        // If it's a Priority ID
+        if (field?.includes('Priority')) {
+            switch (valStr) {
+                case '1': return 'Low';
+                case '2': return 'Medium';
+                case '3': return 'High';
+                default: return valStr;
+            }
+        }
+
+        return valStr;
     }
 }

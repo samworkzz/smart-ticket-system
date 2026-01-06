@@ -1,4 +1,5 @@
 ﻿using SmartTicketApi.Models.DTOs.Agent;
+using SmartTicketApi.Models.DTOs.Shared;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Models.Entities;
@@ -9,7 +10,7 @@ namespace SmartTicketApi.Services.Tickets
     {
         // End User
         Task<int> CreateTicketAsync(int userId, CreateTicketDto dto);
-        Task<IEnumerable<TicketListDto>> GetTicketsForEndUserAsync(int userId);
+        Task<PagedResponseDto<TicketListDto>> GetTicketsForEndUserAsync(int userId, PagedRequestDto pagination);
 
         // Support Manager
         Task<IEnumerable<TicketListDto>> GetAllTicketsAsync();
@@ -17,7 +18,7 @@ namespace SmartTicketApi.Services.Tickets
 
         // Support Agent
         Task UpdateTicketStatusAsync(UpdateTicketStatusDto dto);
-        Task<IEnumerable<TicketListDto>> GetTicketsForAgentAsync(int agentId);
+        Task<PagedResponseDto<TicketListDto>> GetTicketsForAgentAsync(int agentId, PagedRequestDto pagination);
 
         // Admin
         Task UpdateTicketPriorityAsync(int ticketId, int ticketPriorityId);
@@ -28,6 +29,7 @@ namespace SmartTicketApi.Services.Tickets
         Task CancelTicketAsync(int ticketId);
 
         Task<object> GetDashboardMetricsAsync();
+        Task<ManagerReportDto> GetManagerReportsAsync();
 
 
        

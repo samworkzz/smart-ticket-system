@@ -4,6 +4,8 @@ using SmartTicketApi.Models.DTOs.Agent;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Models.Entities;
+using SmartTicketApi.Extensions;
+using SmartTicketApi.Models.DTOs.Shared;
 using SmartTicketApi.Services.Notifications;
 
 namespace SmartTicketApi.Services.Tickets
@@ -51,15 +53,21 @@ namespace SmartTicketApi.Services.Tickets
             return ticket.TicketId;
         }
         //get all tickets created by end user
-        public async Task<IEnumerable<TicketListDto>> GetTicketsForEndUserAsync(int userId)
+        public async Task<PagedResponseDto<TicketListDto>> GetTicketsForEndUserAsync(int userId, PagedRequestDto pagination)
         {
-            return await _context.Tickets
+            var query = _context.Tickets
                 .AsNoTracking()
-                .Where(t => t.CreatedById == userId)
+                .Where(t => t.CreatedById == userId);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketCategory)
                 .Include(t => t.AssignedTo)
+                .ApplySorting(pagination.SortBy, pagination.SortDescending)
+                .ApplyPaging(pagination.PageNumber, pagination.PageSize)
                 .Select(t => new TicketListDto
                 {
                     TicketId = t.TicketId,
@@ -68,9 +76,12 @@ namespace SmartTicketApi.Services.Tickets
                     Priority = t.TicketPriority.PriorityName,
                     Category = t.TicketCategory.CategoryName,
                     CreatedAt = t.CreatedAt,
-                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null
+                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null,
+                    IsEscalated = t.IsEscalated
                 })
                 .ToListAsync();
+
+            return new PagedResponseDto<TicketListDto>(items, totalCount, pagination.PageNumber, pagination.PageSize);
         }
         // SupportManager: Assign Ticket
         public async Task AssignTicketAsync(AssignTicketDto dto)
@@ -120,7 +131,10 @@ namespace SmartTicketApi.Services.Tickets
                     Priority = t.TicketPriority.PriorityName,
                     Category = t.TicketCategory.CategoryName,
                     CreatedAt = t.CreatedAt,
-                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null
+                    AssignedTo = t.AssignedTo != null ? t.AssignedTo.Name : null,
+
+                IsEscalated = t.IsEscalated
+
                 })
                 .ToListAsync();
         }
@@ -138,6 +152,25 @@ namespace SmartTicketApi.Services.Tickets
             var oldStatusId = ticket.TicketStatusId;
             ticket.TicketStatusId = dto.TicketStatusId;
             ticket.UpdatedAt = DateTime.UtcNow;
+
+            // --- CHANGED: Handle ResolvedAt timestamp ---
+            // Assuming status IDs: 4=Resolved, 5=Closed (adjust if your seed data is different)
+            // Or better, check the status name from DB if IDs are not constants.
+            var newStatus = await _context.TicketStatuses.FindAsync(dto.TicketStatusId);
+            if (newStatus != null)
+            {
+                if (newStatus.StatusName == "Resolved" || newStatus.StatusName == "Closed")
+                {
+                    if (ticket.ResolvedAt == null) 
+                        ticket.ResolvedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    // If moving back from Resolved/Closed to In Progress/etc., clear it
+                    ticket.ResolvedAt = null;
+                }
+            }
+            // ---------------------------------------------
 
             await _context.SaveChangesAsync();
 
@@ -163,15 +196,23 @@ namespace SmartTicketApi.Services.Tickets
 
         //get all assigned tickets
 
-        public async Task<IEnumerable<TicketListDto>> GetTicketsForAgentAsync(int agentId)
+        //get all assigned tickets
+
+        public async Task<PagedResponseDto<TicketListDto>> GetTicketsForAgentAsync(int agentId, PagedRequestDto pagination)
         {
-            return await _context.Tickets
+            var query = _context.Tickets
                 .AsNoTracking()
-                .Where(t => t.AssignedToId == agentId)
+                .Where(t => t.AssignedToId == agentId);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketCategory)
                 .Include(t => t.AssignedTo)
+                .ApplySorting(pagination.SortBy, pagination.SortDescending)
+                .ApplyPaging(pagination.PageNumber, pagination.PageSize)
                 .Select(t => new TicketListDto
                 {
                     TicketId = t.TicketId,
@@ -180,9 +221,12 @@ namespace SmartTicketApi.Services.Tickets
                     Priority = t.TicketPriority.PriorityName,
                     Category = t.TicketCategory.CategoryName,
                     CreatedAt = t.CreatedAt,
-                    AssignedTo = t.AssignedTo!.Name
+                    AssignedTo = t.AssignedTo!.Name,
+                    IsEscalated = t.IsEscalated
                 })
                 .ToListAsync();
+
+            return new PagedResponseDto<TicketListDto>(items, totalCount, pagination.PageNumber, pagination.PageSize);
         }
 
         // Admin: Update Ticket Priority
@@ -241,6 +285,9 @@ namespace SmartTicketApi.Services.Tickets
                 CreatedAt = ticket.CreatedAt,
                 CreatedBy = ticket.CreatedBy?.Name ?? "Unknown",
                 AssignedTo = ticket.AssignedTo?.Name,
+                ResolvedAt = ticket.ResolvedAt,
+                ResolutionDetails = ticket.ResolutionDetails,
+                IsEscalated = ticket.IsEscalated,
                 Comments = ticket.Comments?.Select(c => new TicketCommentDto
                 {
                     CommentId = c.TicketCommentId,
@@ -274,6 +321,7 @@ namespace SmartTicketApi.Services.Tickets
             var oldStatusId = ticket.TicketStatusId;
             ticket.TicketStatusId = status.TicketStatusId;
             ticket.UpdatedAt = DateTime.UtcNow;
+            ticket.ResolvedAt = null; // --- CHANGED: Clear ResolvedAt when reopening ---
 
             await _context.SaveChangesAsync();
 
@@ -300,6 +348,11 @@ namespace SmartTicketApi.Services.Tickets
             var oldStatusId = ticket.TicketStatusId;
             ticket.TicketStatusId = status!.TicketStatusId;
             ticket.UpdatedAt = DateTime.UtcNow;
+            
+            // --- CHANGED: Set ResolvedAt when Cancelled/Closed ---
+            if (ticket.ResolvedAt == null)
+                ticket.ResolvedAt = DateTime.UtcNow;
+            // -----------------------------------------------------------
 
             await _context.SaveChangesAsync();
 
@@ -403,6 +456,22 @@ namespace SmartTicketApi.Services.Tickets
             var complianceRate = totalTickets > 0 
                 ? (double)(totalTickets - escalatedTickets) / totalTickets * 100 
                 : 100;
+            
+            // --- CHANGED: Calculate Average Resolution Time ---
+            // Only consider tickets that have a ResolvedAt timestamp
+            var resolvedTickets = await _context.Tickets
+                .Where(t => t.ResolvedAt != null)
+                .Select(t => new { t.CreatedAt, t.ResolvedAt })
+                .ToListAsync();
+
+            double avgResolutionHours = 0;
+            if (resolvedTickets.Any())
+            {
+                // Logic: (ResolvedAt - CreatedAt).TotalHours
+                var totalHours = resolvedTickets.Sum(t => (t.ResolvedAt!.Value - t.CreatedAt).TotalHours);
+                avgResolutionHours = totalHours / resolvedTickets.Count;
+            }
+            // ----------------------------------------------------
 
             return new
             {
@@ -411,8 +480,100 @@ namespace SmartTicketApi.Services.Tickets
                 CategoryMetrics = categoryMetrics,
                 TotalTickets = totalTickets,
                 EscalatedTickets = escalatedTickets,
-                SlaComplianceRate = Math.Round(complianceRate, 2)
+                SlaComplianceRate = Math.Round(complianceRate, 2),
+                AverageResolutionTime = Math.Round(avgResolutionHours, 1) // --- ADDED ---
             };
         }
+        public async Task<ManagerReportDto> GetManagerReportsAsync()
+        {
+            var allTickets = await _context.Tickets
+                .AsNoTracking()
+                .Include(t => t.AssignedTo)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketPriority)
+                .ToListAsync();
+
+            var slas = await _context.SLAs.ToListAsync();
+
+            var report = new ManagerReportDto();
+
+            // 1. Agent Workload (Active Tickets: Assigned, In Progress)
+            // Filter: AssignedTo != null AND Status is NOT Closed/Resolved
+            var activeTickets = allTickets
+                .Where(t => t.AssignedToId.HasValue && 
+                            t.TicketStatus.StatusName != "Closed" && 
+                            t.TicketStatus.StatusName != "Resolved")
+                .ToList();
+
+            report.AgentWorkload = activeTickets
+                .GroupBy(t => t.AssignedToId)
+                .Select(g => new AgentWorkloadDto
+                {
+                    AgentId = g.Key!.Value,
+                    AgentName = g.First().AssignedTo!.Name,
+                    TotalAssigned = g.Count(),
+                    OpenTickets = g.Count(t => t.TicketStatus.StatusName == "Assigned" || t.TicketStatus.StatusName == "Open"),
+                    InProgressTickets = g.Count(t => t.TicketStatus.StatusName == "In Progress")
+                })
+                .ToList();
+
+            // 2. SLA Compliance
+            // Breached: IsEscalated = true
+            // Met: Resolved/Closed AND IsEscalated = false
+            var breachedCount = allTickets.Count(t => t.IsEscalated);
+            var completedTickets = allTickets.Where(t => t.TicketStatus.StatusName == "Resolved" || t.TicketStatus.StatusName == "Closed").ToList();
+            var metCount = completedTickets.Count(t => !t.IsEscalated);
+            var totalWithSla = breachedCount + metCount;
+
+            report.SlaCompliance.BreachedSlaCount = breachedCount;
+            report.SlaCompliance.MetSlaCount = metCount;
+            report.SlaCompliance.ComplianceRate = totalWithSla > 0 ? (double)metCount / totalWithSla * 100 : 100;
+
+            // At Risk: In Progress, Not Escalated, > 75% of SLA time used
+            var inProgressTickets = allTickets.Where(t => t.TicketStatus.StatusName == "In Progress" && !t.IsEscalated && t.AssignedAt.HasValue).ToList();
+            
+            foreach(var t in inProgressTickets)
+            {
+                var sla = slas.FirstOrDefault(s => s.TicketPriorityId == t.TicketPriorityId);
+                if (sla != null)
+                {
+                    var elapsed = (DateTime.UtcNow - t.AssignedAt!.Value).TotalHours;
+                    var threshold = sla.ResponseHours * 0.75; // 75% warning
+
+                    if (elapsed >= threshold)
+                    {
+                        report.SlaCompliance.ApproachingBreachCount++;
+                        report.SlaCompliance.AtRiskTickets.Add(new TicketSummaryDto
+                        {
+                            TicketId = t.TicketId,
+                            Title = t.Title,
+                            AssignedTo = t.AssignedTo?.Name ?? "Unassigned",
+                            CreatedAt = t.CreatedAt,
+                            HoursElapsed = Math.Round(elapsed, 1)
+                        });
+                    }
+                }
+            }
+
+            // 3. Performance (Resolution Time)
+            // Consider only Resolved/Closed tickets with ResolvedAt date
+            var resolvedList = allTickets
+                .Where(t => t.ResolvedAt.HasValue && t.AssignedToId.HasValue)
+                .ToList();
+
+            report.AgentPerformance = resolvedList
+                .GroupBy(t => t.AssignedToId)
+                .Select(g => new AgentPerformanceDto
+                {
+                    AgentId = g.Key!.Value,
+                    AgentName = g.First().AssignedTo!.Name,
+                    ResolvedCount = g.Count(),
+                    AvgResolutionHours = Math.Round(g.Average(t => (t.ResolvedAt!.Value - t.CreatedAt).TotalHours), 1)
+                })
+                .ToList();
+
+            return report;
+        }
+
     }
 }

@@ -94,44 +94,7 @@
   flex-wrap: wrap;
 }
 
-.badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.priority-high {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.priority-medium {
-  background-color: #ffedd5;
-  color: #9a3412;
-}
-
-.priority-low {
-  background-color: #dcfce7;
-  color: #166534;
-}
-
-.status.assigned {
-  background-color: #dfe7ff;
-  color: #3730a3;
-}
-
-.status.in-progress {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.status.closed {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
+/* Badge styles handled by global CSS */
 
 /* Empty State */
 .empty-state {

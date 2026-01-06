@@ -5,29 +5,33 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule} from '@angular/material/button';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, 
-FormsModule,MatCardModule,
-MatInputModule,
-MatButtonModule,
-RouterLink
-],
+  imports: [CommonModule,
+    FormsModule, MatCardModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterLink
+  ],
   templateUrl: './login.component.html',
-  styleUrl:'./login.component.css'
+  styleUrl: './login.component.css'
 })
 export class LoginComponent {
 
   email = '';
   password = '';
   errorMessage = '';
+  hidePassword = true;
 
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   login(): void {
     this.authService.login(this.email, this.password).subscribe({

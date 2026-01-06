@@ -1,3 +1,5 @@
+using SmartTicketApi.Models.DTOs.Shared;
+using SmartTicketApi.Models.DTOs.Admin;
 using SmartTicketApi.Models.Entities;
 
 namespace SmartTicketApi.Services.Admin
@@ -19,5 +21,10 @@ namespace SmartTicketApi.Services.Admin
         // SLAs
         Task<List<SLA>> GetSLAsAsync();
         Task UpdateSLAAsync(int id, int responseHours);
+
+        // User Management
+        Task<PagedResponseDto<UserListDto>> GetUsersWithRolesAsync(PagedRequestDto pagination);
+        Task UpdateUserRoleAsync(UpdateUserRoleDto dto);
+        Task<List<RoleDto>> GetRolesAsync();
     }
 }

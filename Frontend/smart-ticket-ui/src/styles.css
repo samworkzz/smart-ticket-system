@@ -1,1 +1,154 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* 
+   Global Badge Styles 
+   Targeting: .badge, .status-badge, .priority-badge
+*/
+.badge,
+.status-badge,
+.priority-badge {
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: normal;
+}
+
+.badge.category,
+.category-badge {
+    background-color: #e0f2fe;
+    /* Sky-100 */
+    color: #0369a1;
+    /* Sky-700 */
+}
+
+/* 
+   PRIORITY BADGES - SOLID COLORS (High Visibility)
+*/
+
+/* High Priority - Red */
+.badge.priority.high,
+.priority-high,
+.badge-high,
+.priority-badge.High {
+    background-color: #e11d48 !important;
+    /* Rose-600 */
+    color: white !important;
+}
+
+/* Medium Priority - Amber */
+.badge.priority.medium,
+.priority-medium,
+.badge-medium,
+.priority-badge.Medium {
+    background-color: #f59e0b !important;
+    /* Amber-500 */
+    color: white !important;
+}
+
+/* Low Priority - Green */
+.badge.priority.low,
+.priority-low,
+.badge-low,
+.priority-badge.Low {
+    background-color: #10b981 !important;
+    /* Emerald-500 */
+    color: white !important;
+}
+
+/* 
+   STATUS BADGES - PASTEL COLORS (Soft UI)
+*/
+
+/* Created / Open */
+.badge.status.Created,
+.status-badge.Created,
+.status-created,
+.status-badge.Open,
+.status-open {
+    background-color: #f1f5f9 !important;
+    /* Slate-100 */
+    color: #475569 !important;
+    /* Slate-600 */
+}
+
+/* Assigned */
+.badge.status.Assigned,
+.status-badge.Assigned,
+.status-assigned {
+    background-color: #dbeafe !important;
+    /* Blue-100 */
+    color: #1e40af !important;
+    /* Blue-800 */
+}
+
+/* In Progress - Pastel Pink */
+/* 
+   Robust selectors:
+   1. .status-in-progress (Helper method output)
+   2. .status-progress (Old helper method output likely)
+   3. .status-badge.In.Progress (Class "In Progress" split by space)
+   4. .status-badge.InProgress (Class "InProgress" if no space)
+*/
+.badge.status.InProgress,
+.status-badge.InProgress,
+.status-in-progress,
+.status.in-progress,
+.status-progress,
+.status-badge.In.Progress {
+    background-color: #fce7f3 !important;
+    /* Pink-100 */
+    color: #be185d !important;
+    /* Pink-700 */
+}
+
+/* Resolved */
+.badge.status.Resolved,
+.status-badge.Resolved,
+.status-resolved {
+    background-color: #d1fae5 !important;
+    /* Emerald-100 */
+    color: #065f46 !important;
+    /* Emerald-800 */
+}
+
+/* Closed */
+.badge.status.Closed,
+.status-badge.Closed,
+.status-closed,
+.status.closed {
+    background-color: #f1f5f9 !important;
+    /* Slate-100 */
+    color: #0f172a !important;
+    /* Slate-900 */
+    border: 1px solid #cbd5e1;
+}
+
+/* SLA Breach */
+.badge.escalated,
+.breach-badge {
+    background-color: #e11d48 !important;
+    color: white !important;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(225, 29, 72, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+    }
+}

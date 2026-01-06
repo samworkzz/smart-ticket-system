@@ -11,6 +11,9 @@ namespace SmartTicketApi.Models.DTOs.Tickets
         public DateTime CreatedAt { get; set; }
         public string CreatedBy { get; set; } = string.Empty;
         public string? AssignedTo { get; set; }
+        public DateTime? ResolvedAt { get; set; }
+        public string? ResolutionDetails { get; set; }
+        public bool IsEscalated { get; set; }
 
         public List<TicketCommentDto> Comments { get; set; } = new();
         public List<TicketLogDto> ActivityLogs { get; set; } = new();

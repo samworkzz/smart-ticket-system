@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartTicketApi.Models.DTOs.Manager;
+using SmartTicketApi.Models.DTOs.Shared;
 using SmartTicketApi.Services.Manager;
 
 namespace SmartTicketApi.Controllers
@@ -31,9 +32,9 @@ namespace SmartTicketApi.Controllers
         // 2️ Get unassigned tickets
         // ============================
         [HttpGet("unassigned-tickets")]
-        public async Task<IActionResult> GetUnassignedTickets()
+        public async Task<IActionResult> GetUnassignedTickets([FromQuery] PagedRequestDto pagination)
         {
-            var tickets = await _managerService.GetUnassignedTicketsAsync();
+            var tickets = await _managerService.GetUnassignedTicketsAsync(pagination);
             return Ok(tickets);
         }
 

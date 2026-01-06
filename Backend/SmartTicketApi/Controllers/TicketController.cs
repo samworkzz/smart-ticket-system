@@ -4,6 +4,7 @@ using SmartTicketApi.Models.DTOs.Agent;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Tickets;
 using SmartTicketApi.Services.Tickets;
+using SmartTicketApi.Models.DTOs.Shared;
 using System.Security.Claims;
 
 namespace SmartTicketApi.Controllers
@@ -61,7 +62,7 @@ namespace SmartTicketApi.Controllers
 
         // SupportAgent: Update Ticket Status
 
-        [Authorize(Roles = "SupportAgent")]
+        [Authorize(Roles = "SupportAgent,SupportManager")]
         [HttpPut("status")]
         public async Task<IActionResult> UpdateTicketStatus([FromBody] UpdateTicketStatusDto dto)
         {
@@ -97,20 +98,20 @@ namespace SmartTicketApi.Controllers
         // END USER
         [Authorize(Roles = "EndUser")]
         [HttpGet("my")]
-        public async Task<IActionResult> GetMyTickets()
+        public async Task<IActionResult> GetMyTickets([FromQuery] PagedRequestDto pagination)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var tickets = await _ticketService.GetTicketsForEndUserAsync(userId);
+            var tickets = await _ticketService.GetTicketsForEndUserAsync(userId, pagination);
             return Ok(tickets);
         }
 
         // SUPPORT AGENT
         [Authorize(Roles = "SupportAgent")]
         [HttpGet("assigned")]
-        public async Task<IActionResult> GetAssignedTickets()
+        public async Task<IActionResult> GetAssignedTickets([FromQuery] PagedRequestDto pagination)
         {
             var agentId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var tickets = await _ticketService.GetTicketsForAgentAsync(agentId);
+            var tickets = await _ticketService.GetTicketsForAgentAsync(agentId, pagination);
             return Ok(tickets);
         }
 
@@ -153,6 +154,14 @@ namespace SmartTicketApi.Controllers
         {
             var metrics = await _ticketService.GetDashboardMetricsAsync();
             return Ok(metrics);
+        }
+
+        [Authorize(Roles = "SupportManager")]
+        [HttpGet("reports/manager")]
+        public async Task<IActionResult> GetManagerReports()
+        {
+            var report = await _ticketService.GetManagerReportsAsync();
+            return Ok(report);
         }
 
         private int GetUserIdFromToken()

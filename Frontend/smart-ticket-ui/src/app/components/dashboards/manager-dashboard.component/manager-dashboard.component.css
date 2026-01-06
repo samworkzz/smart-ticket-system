@@ -1,6 +1,7 @@
 :host {
   display: block;
-  background-color: #f8fafc; /* Slate 50 */
+  background-color: #f8fafc;
+  /* Slate 50 */
   min-height: 100vh;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
@@ -22,12 +23,14 @@
 .header-content h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #1e293b; /* Slate 800 */
+  color: #1e293b;
+  /* Slate 800 */
   margin: 0;
 }
 
 .subtitle {
-  color: #64748b; /* Slate 500 */
+  color: #64748b;
+  /* Slate 500 */
   font-size: 1rem;
   margin-top: 0.25rem;
 }
@@ -97,7 +100,8 @@
 }
 
 /* Badges */
-.priority-badge, .category-badge, .date-badge {
+.category-badge,
+.date-badge {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
@@ -107,17 +111,17 @@
   text-transform: uppercase;
 }
 
-.badge-high { background-color: #fee2e2; color: #991b1b; } /* Red */
-.badge-medium { background-color: #ffedd5; color: #9a3412; } /* Orange */
-.badge-low { background-color: #dcfce7; color: #166534; } /* Green */
-.badge-default { background-color: #f1f5f9; color: #475569; }
+/* Priority Badges handled by global CSS */
 
 .category-badge {
-  background-color: #e0f2fe; color: #075985; /* Blue */
+  background-color: #e0f2fe;
+  color: #075985;
+  /* Blue */
 }
 
 .date-badge {
-  background-color: #f3f4f6; color: #6b7280; 
+  background-color: #f3f4f6;
+  color: #6b7280;
   font-weight: 400;
   text-transform: none;
 }
@@ -184,8 +188,15 @@
 
 /* Animation */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fadeIn {

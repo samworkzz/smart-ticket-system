@@ -6,7 +6,7 @@
       <p class="subtitle">Manage your assigned tickets</p>
     </div>
     <div class="actions">
-      <button mat-raised-button color="primary" (click)="loadAssignedTickets()">
+      <button mat-raised-button color="primary" (click)="loadAssignedTickets()" matTooltip="Refresh Tickets">
         <mat-icon>refresh</mat-icon> Refresh
       </button>
     </div>
@@ -14,69 +14,87 @@
 
   <mat-progress-bar mode="indeterminate" *ngIf="isLoading" class="loading-bar"></mat-progress-bar>
 
-  <div class="tickets-grid" *ngIf="tickets.length > 0; else emptyState">
+  <div class="mat-elevation-z2 table-container">
+    <table mat-table [dataSource]="tickets" matSort (matSortChange)="onSortChange($event)" matSortActive="CreatedAt"
+      matSortDirection="desc" matSortDisableClear>
 
-    <mat-card *ngFor="let ticket of tickets" class="ticket-card fadeIn">
-      <div class="status-stripe" [ngClass]="getStatusClass(ticket.status)"></div>
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketId"> Ticket ID </th>
+        <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
+      </ng-container>
 
-      <mat-card-header>
-        <div mat-card-avatar class="ticket-avatar">
-          <mat-icon>confirmation_number</mat-icon>
-        </div>
-        <mat-card-title>
-          {{ticket.title}}
-          <span class="id-badge">#{{ticket.ticketId}}</span>
-        </mat-card-title>
-        <mat-card-subtitle>
-          {{ticket.category}} &bull; {{ticket.createdAt | date:'shortDate'}}
-        </mat-card-subtitle>
-      </mat-card-header>
+      <!-- Title Column -->
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="Title"> Title </th>
+        <td mat-cell *matCellDef="let element"> {{element.title}} </td>
+      </ng-container>
 
-      <mat-card-content>
-        <div class="badges">
-          <span class="badge priority" [ngClass]="getPriorityClass(ticket.priority)">
-            {{ticket.priority}} Priority
+      <!-- Category Column -->
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketCategory.CategoryName"> Category </th>
+        <td mat-cell *matCellDef="let element"> {{element.category}} </td>
+      </ng-container>
+
+      <!-- Priority Column -->
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketPriority.PriorityName"> Priority </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="badge priority" [ngClass]="getPriorityClass(element.priority)">
+            {{element.priority}}
           </span>
-          <span class="badge status" [ngClass]="getStatusClass(ticket.status)">
-            {{ticket.status}}
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketStatus.StatusName"> Status </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="badge status" [ngClass]="getStatusClass(element.status)">
+            {{element.status}}
           </span>
-        </div>
-      </mat-card-content>
+          <span class="badge escalated" *ngIf="element.isEscalated">
+            <mat-icon inline="true">warning</mat-icon> SLA
+          </span>
+        </td>
+      </ng-container>
 
-      <mat-card-actions align="end">
-        <button mat-button color="primary" (click)="viewDetails(ticket.ticketId)">
-          <mat-icon>visibility</mat-icon> Details
-        </button>
+      <!-- CreatedAt Column -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="CreatedAt"> Created </th>
+        <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'short'}} </td>
+      </ng-container>
 
-        <!-- Action: Start Work -->
-        <button mat-stroked-button color="accent" *ngIf="ticket.status === 'Assigned'"
-          (click)="startWork(ticket.ticketId)">
-          Start Work
-        </button>
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="primary" (click)="viewDetails(element.ticketId)" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <!-- Additional Actions -->
+          <button mat-icon-button color="accent" *ngIf="element.status === 'Assigned'"
+            (click)="startWork(element.ticketId)" matTooltip="Start Work">
+            <mat-icon>play_circle_filled</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" *ngIf="element.status === 'In Progress'"
+            (click)="resolveTicket(element.ticketId)" matTooltip="Resolve Ticket">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-        <!-- Action: Close Ticket -->
-        <button mat-flat-button color="warn" *ngIf="ticket.status === 'In Progress'"
-          (click)="closeTicket(ticket.ticketId)">
-          Close Ticket
-        </button>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
-        <!-- Info: Closed -->
-        <button mat-button disabled *ngIf="ticket.status === 'Closed'">
-          <mat-icon>check_circle</mat-icon> Completed
-        </button>
-      </mat-card-actions>
-    </mat-card>
+    <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)" showFirstLastButtons>
+    </mat-paginator>
 
-  </div>
-
-  <ng-template #emptyState>
-    <div class="empty-state" *ngIf="!isLoading">
-      <div class="empty-icon">
-        <mat-icon>assignment_turned_in</mat-icon>
-      </div>
-      <h3>No tickets assigned</h3>
-      <p>Great job! You have cleared your queue.</p>
+    <div *ngIf="!isLoading && tickets.length === 0" class="empty-state-table">
+      No tickets assigned.
     </div>
-  </ng-template>
+  </div>
 
 </div>

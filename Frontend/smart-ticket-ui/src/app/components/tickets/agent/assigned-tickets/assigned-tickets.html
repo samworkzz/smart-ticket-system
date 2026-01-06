@@ -5,49 +5,51 @@
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 
-  <table
-    mat-table
-    [dataSource]="tickets"
-    class="mat-elevation-z2"
-    *ngIf="!loading && tickets.length > 0"
-  >
+  <div class="table-container mat-elevation-z2" *ngIf="!loading || tickets.length > 0">
+    <table mat-table [dataSource]="tickets" matSort (matSortChange)="onSortChange($event)" matSortActive="CreatedAt"
+      matSortDirection="desc" matSortDisableClear>
 
-    <ng-container matColumnDef="ticketId">
-      <th mat-header-cell *matHeaderCellDef>ID</th>
-      <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
-    </ng-container>
+      <ng-container matColumnDef="ticketId">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketId">ID</th>
+        <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="title">
-      <th mat-header-cell *matHeaderCellDef>Title</th>
-      <td mat-cell *matCellDef="let t">{{ t.title }}</td>
-    </ng-container>
+      <ng-container matColumnDef="title">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="Title">Title</th>
+        <td mat-cell *matCellDef="let t">{{ t.title }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef>Category</th>
-      <td mat-cell *matCellDef="let t">{{ t.category }}</td>
-    </ng-container>
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketCategory.CategoryName">Category</th>
+        <td mat-cell *matCellDef="let t">{{ t.category }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="priority">
-      <th mat-header-cell *matHeaderCellDef>Priority</th>
-      <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
-    </ng-container>
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketPriority.PriorityName">Priority</th>
+        <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef>Status</th>
-      <td mat-cell *matCellDef="let t">{{ t.status }}</td>
-    </ng-container>
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketStatus.StatusName">Status</th>
+        <td mat-cell *matCellDef="let t">{{ t.status }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="createdAt">
-      <th mat-header-cell *matHeaderCellDef>Created</th>
-      <td mat-cell *matCellDef="let t">
-        {{ t.createdAt | date:'short' }}
-      </td>
-    </ng-container>
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="CreatedAt">Created</th>
+        <td mat-cell *matCellDef="let t">
+          {{ t.createdAt | date:'short' }}
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-  </table>
+    </table>
+
+    <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)" showFirstLastButtons>
+    </mat-paginator>
+  </div>
 
   <p *ngIf="!loading && tickets.length === 0" class="text-muted">
     No assigned tickets.

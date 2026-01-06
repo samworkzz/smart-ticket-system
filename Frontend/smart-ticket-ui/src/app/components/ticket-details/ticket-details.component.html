@@ -30,6 +30,39 @@
         </div>
     </mat-card>
 
+    <!-- STATUS STEPPER -->
+    <div class="status-stepper-container fadeIn">
+        <div class="stepper">
+            <div class="step" [class.completed]="ticket.status !== 'Open'" [class.active]="ticket.status === 'Open'">
+                <div class="step-circle"><mat-icon>radio_button_checked</mat-icon></div>
+                <div class="step-label">Open</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" [class.completed]="ticket.status !== 'Open' && ticket.status !== 'Assigned'"
+                [class.active]="ticket.status === 'Assigned'">
+                <div class="step-circle"><mat-icon>person</mat-icon></div>
+                <div class="step-label">Assigned</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" [class.completed]="ticket.status === 'Resolved' || ticket.status === 'Closed'"
+                [class.active]="ticket.status === 'In Progress'">
+                <div class="step-circle"><mat-icon>build</mat-icon></div>
+                <div class="step-label">In Progress</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" [class.completed]="ticket.status === 'Closed'"
+                [class.active]="ticket.status === 'Resolved'">
+                <div class="step-circle"><mat-icon>check_circle</mat-icon></div>
+                <div class="step-label">Resolved</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step" [class.active]="ticket.status === 'Closed'">
+                <div class="step-circle"><mat-icon>lock</mat-icon></div>
+                <div class="step-label">Closed</div>
+            </div>
+        </div>
+    </div>
+
     <div class="content-grid">
 
         <!-- Left Column: Details -->
@@ -53,6 +86,15 @@
                             <span>{{ticket.assignedTo || 'Unassigned'}}</span>
                         </div>
                     </div>
+
+                    <!-- Resolution Section -->
+                    <div class="resolution-box fadeIn" *ngIf="ticket.resolvedAt">
+                        <mat-divider class="spacer"></mat-divider>
+                        <h3><mat-icon color="primary">check_circle</mat-icon> Resolution</h3>
+                        <p class="resolution-text">{{ticket.resolutionDetails || 'Resolved without specific details.'}}
+                        </p>
+                        <span class="meta-text">Resolved on {{ticket.resolvedAt | date:'medium'}}</span>
+                    </div>
                 </mat-card-content>
             </mat-card>
 
@@ -69,8 +111,9 @@
                                 <div class="log-content">
                                     <span class="log-action">{{log.action}}</span>
                                     <span class="log-meta">
-                                        <span *ngIf="log.oldValue">{{log.oldValue}} &rarr; </span>
-                                        {{log.newValue}}
+                                        <span *ngIf="log.oldValue">{{getLogValue(log.oldValue, log.action)}} &rarr;
+                                        </span>
+                                        {{getLogValue(log.newValue, log.action)}}
                                     </span>
                                     <span class="log-date">{{log.createdAt | date:'short'}}</span>
                                 </div>

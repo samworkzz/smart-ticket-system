@@ -9,6 +9,7 @@
         public string Category { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? AssignedTo { get; set; }
+        public bool IsEscalated { get; set; }
     }
 
 }

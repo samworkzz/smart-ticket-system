@@ -1,87 +1,116 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TicketService } from '../../../services/ticket.service';
-
 import { MatTableModule } from '@angular/material/table';
-import { MatCardModule } from '@angular/material/card';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
-import { CreateTicketComponent } from '../../tickets/create-ticket/create-ticket';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router, RouterModule } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { PagedRequest } from '../../../models/shared.models';
 
 @Component({
   selector: 'app-enduser-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
     MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
     MatButtonModule,
-    MatProgressSpinnerModule,
-    CreateTicketComponent
+    MatIconModule,
+    MatProgressBarModule,
+    RouterModule,
+    MatTooltipModule
   ],
   templateUrl: './enduser-dashboard.component.html',
   styleUrls: ['./enduser-dashboard.component.css']
 })
 export class EnduserDashboardComponent implements OnInit {
 
-  currentView: 'list' | 'create' = 'create';
-
   tickets: any[] = [];
   loading = false;
 
-  displayedColumns: string[] = [
-    'ticketId',
-    'title',
-    'category',
-    'priority',
-    'status',
-    'createdAt',
-    'actions'
-  ];
+  // Pagination & Sorting state
+  totalCount = 0;
+  pageSize = 10;
+  pageIndex = 0;
+  sortBy = 'CreatedAt';
+  sortDescending = true;
+
+  displayedColumns: string[] = ['id', 'title', 'category', 'priority', 'status', 'createdAt', 'actions'];
 
   constructor(
-    private authService: AuthService,
     private ticketService: TicketService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.loadTickets();
-    }
+    this.loadTickets();
   }
 
   loadTickets(): void {
     this.loading = true;
 
-    this.ticketService.getMyTickets().subscribe({
+    const request: PagedRequest = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.sortBy,
+      sortDescending: this.sortDescending
+    };
+
+    this.ticketService.getMyTickets(request).subscribe({
       next: (data) => {
-        this.tickets = Array.isArray(data) ? data : [];
+        this.tickets = data.items;
+        this.totalCount = data.totalCount;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Ticket load failed', err);
-        this.tickets = [];
+        console.error('Failed to load tickets', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  onTicketCreated(): void {
-    this.currentView = 'list';
-    this.loadTickets(); // refresh list
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadTickets();
+  }
+
+  onSortChange(sort: Sort): void {
+    this.sortBy = sort.active;
+    this.sortDescending = sort.direction === 'desc';
+    this.loadTickets();
   }
 
   viewDetails(ticketId: number): void {
     this.router.navigate(['/ticket', ticketId]);
   }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  getStatusClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'created': return 'status-created';
+      case 'open': return 'status-open';
+      case 'assigned': return 'status-assigned';
+      case 'in progress': return 'status-in-progress';
+      case 'resolved': return 'status-resolved';
+      case 'closed': return 'status-closed';
+      default: return 'status-default';
+    }
+  }
+
+  getPriorityClass(priority: string): string {
+    switch (priority?.toLowerCase()) {
+      case 'high': return 'priority-high';
+      case 'medium': return 'priority-medium';
+      case 'low': return 'priority-low';
+      default: return 'priority-default';
+    }
   }
 }

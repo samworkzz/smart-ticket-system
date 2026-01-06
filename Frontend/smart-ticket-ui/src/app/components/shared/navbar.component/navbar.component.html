@@ -4,14 +4,15 @@
     <span class="brand">Smart Ticket System</span>
 
     <ng-container *ngIf="getRole() === 'EndUser'">
-      <a routerLink="/enduser">Dashboard</a>
+      <a routerLink="/enduser">My Tickets</a>
+      <a routerLink="/create-ticket">New Ticket</a>
     </ng-container>
 
     <ng-container *ngIf="getRole() === 'SupportAgent'">
       <a routerLink="/agent">Assigned Tickets</a>
     </ng-container>
 
-    <ng-container *ngIf="getRole() === 'SupportManager' || getRole() === 'Admin'">
+    <ng-container *ngIf="getRole() === 'SupportManager'">
       <a routerLink="/manager">Manage Tickets</a>
       <a routerLink="/reports">Reports</a>
     </ng-container>

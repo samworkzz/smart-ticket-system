@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { AgentWorkload, UnassignedTicket, AssignTicketPayload } from '../models/manager.models';
+import { PagedRequest, PagedResponse } from '../models/shared.models';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -10,12 +11,32 @@ export class ManagerService {
 
   constructor(private http: HttpClient) { }
 
-  getAgents(): Observable<AgentWorkload[]> {
-    return this.http.get<AgentWorkload[]>(`${this.apiUrl}/agents`);
+  private getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
   }
 
-  getUnassignedTickets(): Observable<UnassignedTicket[]> {
-    return this.http.get<UnassignedTicket[]>(`${this.apiUrl}/unassigned-tickets`);
+  getAgents(): Observable<AgentWorkload[]> {
+    return this.http.get<AgentWorkload[]>(`${this.apiUrl}/agents`, this.getAuthHeaders());
+  }
+
+  getUnassignedTickets(pagination?: PagedRequest): Observable<PagedResponse<UnassignedTicket>> {
+    let params = new HttpParams();
+    if (pagination) {
+      params = params.set('pageNumber', pagination.pageNumber)
+        .set('pageSize', pagination.pageSize);
+      if (pagination.sortBy) params = params.set('sortBy', pagination.sortBy);
+      if (pagination.sortDescending !== undefined) params = params.set('sortDescending', pagination.sortDescending);
+    }
+
+    return this.http.get<PagedResponse<UnassignedTicket>>(
+      `${this.apiUrl}/unassigned-tickets`,
+      { ...this.getAuthHeaders(), params }
+    );
   }
 
   assignTicket(ticketId: number, agentId: number): Observable<any> {
@@ -23,6 +44,6 @@ export class ManagerService {
       ticketId,
       assignedToUserId: agentId
     };
-    return this.http.put(`${this.apiUrl}/assign`, payload);
+    return this.http.put(`${this.apiUrl}/assign`, payload, this.getAuthHeaders());
   }
 }

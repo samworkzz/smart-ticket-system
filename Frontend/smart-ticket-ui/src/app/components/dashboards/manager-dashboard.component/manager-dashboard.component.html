@@ -7,7 +7,7 @@
       <p class="subtitle">Overview and Ticket Assignment</p>
     </div>
     <div class="actions">
-      <button mat-raised-button color="primary" (click)="loadData()">
+      <button mat-raised-button color="primary" (click)="loadData()" matTooltip="Refresh Data">
         <mat-icon>refresh</mat-icon> Refresh
       </button>
     </div>
@@ -17,48 +17,177 @@
 
   <div class="dashboard-grid">
 
-    <!-- Left Column: Unassigned Tickets -->
+    <!-- Left Column: Tickets Tabs -->
     <div class="main-content">
-      <div class="section-title">
-        <h2>Unassigned Tickets <span class="badge-count">{{unassignedTickets.length}}</span></h2>
-      </div>
+      <mat-tab-group animationDuration="0ms">
 
-      <div class="ticket-list" *ngIf="unassignedTickets.length > 0; else noTickets">
-        <mat-card *ngFor="let t of unassignedTickets" class="ticket-card fadeIn">
-          <mat-card-header>
-            <mat-card-title>{{t.title}}</mat-card-title>
-            <mat-card-subtitle>
-              <span [class]="'priority-badge ' + getPriorityClass(t.priority)">{{t.priority}}</span>
-              <span class="category-badge">{{t.category}}</span>
-              <span class="date-badge">{{t.createdAt | date:'short'}}</span>
-            </mat-card-subtitle>
-          </mat-card-header>
+        <!-- Tab 1: Unassigned -->
+        <mat-tab label="Unassigned Tickets">
+          <ng-template matTabContent>
+            <div class="tab-content-wrapper">
+              <div class="section-header">
+                <h3>Incoming Tickets <span class="badge-count">{{totalCount}}</span></h3>
+              </div>
 
-          <mat-card-content>
-            <p>Ticket ID: #{{t.ticketId}}</p>
-          </mat-card-content>
+              <div class="mat-elevation-z2 table-container">
+                <table mat-table [dataSource]="unassignedTickets" matSort (matSortChange)="onSortChange($event)"
+                  matSortActive="CreatedAt" matSortDirection="desc" matSortDisableClear>
 
-          <mat-card-actions align="end">
-            <button mat-button color="primary" (click)="viewDetails(t.ticketId)">View</button>
-            <mat-form-field appearance="outline" class="agent-select">
-              <mat-label>Assign to Agent</mat-label>
-              <mat-select (selectionChange)="assign(t.ticketId, $event.value)">
-                <mat-option *ngFor="let a of agents" [value]="a.agentId">
-                  {{ a.name }} ({{ a.assignedTicketCount }} active)
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </mat-card-actions>
-        </mat-card>
-      </div>
+                  <!-- ID Column -->
+                  <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketId"> ID </th>
+                    <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
+                  </ng-container>
 
-      <ng-template #noTickets>
-        <div class="empty-state">
-          <mat-icon>check_circle</mat-icon>
-          <h3>All caught up!</h3>
-          <p>No unassigned tickets pending.</p>
-        </div>
-      </ng-template>
+                  <!-- Title Column -->
+                  <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="Title"> Title </th>
+                    <td mat-cell *matCellDef="let element"> {{element.title}} </td>
+                  </ng-container>
+
+                  <!-- Category Column -->
+                  <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketCategory.CategoryName"> Category </th>
+                    <td mat-cell *matCellDef="let element"> {{element.category}} </td>
+                  </ng-container>
+
+                  <!-- Priority Column -->
+                  <ng-container matColumnDef="priority">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketPriority.PriorityName"> Priority </th>
+                    <td mat-cell *matCellDef="let element">
+                      <span [class]="'priority-badge ' + getPriorityClass(element.priority)">{{element.priority}}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- CreatedAt Column -->
+                  <ng-container matColumnDef="createdAt">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header="CreatedAt"> Created </th>
+                    <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'short'}} </td>
+                  </ng-container>
+
+                  <!-- Assign Column -->
+                  <ng-container matColumnDef="assign">
+                    <th mat-header-cell *matHeaderCellDef> Assign To </th>
+                    <td mat-cell *matCellDef="let element">
+                      <mat-form-field appearance="outline" class="agent-select-compact">
+                        <mat-select (selectionChange)="assign(element.ticketId, $event.value)"
+                          placeholder="Select Agent">
+                          <mat-option *ngFor="let a of agents" [value]="a.agentId">
+                            {{ a.name }} ({{ a.assignedTicketCount }})
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                    <td mat-cell *matCellDef="let element">
+                      <button mat-icon-button color="primary" (click)="viewDetails(element.ticketId)"
+                        matTooltip="View Details">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+
+                <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+                  (page)="onPageChange($event)" showFirstLastButtons>
+                </mat-paginator>
+
+                <div *ngIf="!isLoading && unassignedTickets.length === 0" class="empty-state-table">
+                  No unassigned tickets.
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+
+        <!-- Tab 2: Resolved -->
+        <mat-tab label="Resolved Tickets (Verify)">
+          <ng-template matTabContent>
+            <div class="tab-content-wrapper">
+              <div class="section-header">
+                <h3>Resolved Tickets Pending Closure <span class="badge-count">{{resolvedTickets.length}}</span></h3>
+              </div>
+
+              <div class="mat-elevation-z2 table-container">
+                <table mat-table [dataSource]="resolvedTickets">
+
+                  <!-- ID Column -->
+                  <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef> ID </th>
+                    <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
+                  </ng-container>
+
+                  <!-- Title Column -->
+                  <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef> Title </th>
+                    <td mat-cell *matCellDef="let element"> {{element.title}} </td>
+                  </ng-container>
+
+                  <!-- Category Column -->
+                  <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef> Category </th>
+                    <td mat-cell *matCellDef="let element"> {{element.category}} </td>
+                  </ng-container>
+
+                  <!-- Priority Column -->
+                  <ng-container matColumnDef="priority">
+                    <th mat-header-cell *matHeaderCellDef> Priority </th>
+                    <td mat-cell *matCellDef="let element">
+                      <span [class]="'priority-badge ' + getPriorityClass(element.priority)">{{element.priority}}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Assigned To -->
+                  <ng-container matColumnDef="assignedTo">
+                    <th mat-header-cell *matHeaderCellDef> Agent </th>
+                    <td mat-cell *matCellDef="let element">
+                      <div class="agent-chip">
+                        <mat-icon inline="true" class="small-icon">person</mat-icon>
+                        {{element.assignedTo}}
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- CreatedAt Column -->
+                  <ng-container matColumnDef="createdAt">
+                    <th mat-header-cell *matHeaderCellDef> Created </th>
+                    <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'short'}} </td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                    <td mat-cell *matCellDef="let element">
+                      <button mat-icon-button color="primary" (click)="viewDetails(element.ticketId)"
+                        matTooltip="View Details">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                      <button mat-raised-button color="warn" class="close-btn" (click)="closeTicket(element.ticketId)"
+                        matTooltip="Close Ticket">
+                        <mat-icon>lock</mat-icon> Close
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="resolvedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: resolvedColumns;"></tr>
+                </table>
+                <div *ngIf="!isLoading && resolvedTickets.length === 0" class="empty-state-table">
+                  No resolved tickets pending closure.
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </mat-tab>
+
+      </mat-tab-group>
     </div>
 
     <!-- Right Column: Agent Workload -->

@@ -1,87 +1,93 @@
-<div class="enduser-dashboard">
+<div class="dashboard-container">
 
-  <!-- HEADER -->
-  <mat-card class="dashboard-header">
-    <h2>End User Dashboard</h2>
-    <p class="subtitle">
-      Create new support tickets or track existing ones.
-    </p>
-  </mat-card>
-
-  <!-- ACTION BUTTONS -->
-  <div class="dashboard-actions">
-    <button mat-raised-button color="primary" (click)="currentView = 'list'">
-      My Tickets
-    </button>
-
-    <button mat-raised-button color="accent" (click)="currentView = 'create'">
-      Create Ticket
-    </button>
-  </div>
-
-  <!-- CREATE TICKET -->
-  <app-create-ticket *ngIf="currentView === 'create'" (ticketCreated)="onTicketCreated()"></app-create-ticket>
-
-  <!-- MY TICKETS LIST -->
-  <mat-card *ngIf="currentView === 'list'">
-
-    <h3>My Tickets</h3>
-
-    <div *ngIf="loading" class="spinner-wrapper">
-      <mat-spinner diameter="40"></mat-spinner>
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>My Tickets</h1>
+      <p class="subtitle">Track and manage your support requests</p>
     </div>
+    <div class="actions">
+      <button mat-raised-button color="primary" routerLink="/create-ticket" matTooltip="Create New Ticket">
+        <mat-icon>add</mat-icon> New Ticket
+      </button>
+      <button mat-stroked-button (click)="loadTickets()" matTooltip="Refresh Tickets">
+        <mat-icon>refresh</mat-icon> Refresh
+      </button>
+    </div>
+  </header>
 
-    <table mat-table [dataSource]="tickets" *ngIf="!loading && tickets.length > 0" class="mat-elevation-z2">
+  <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
 
-      <ng-container matColumnDef="ticketId">
-        <th mat-header-cell *matHeaderCellDef>ID</th>
-        <td mat-cell *matCellDef="let t">{{ t.ticketId }}</td>
+  <div class="mat-elevation-z2 table-container">
+    <table mat-table [dataSource]="tickets" matSort (matSortChange)="onSortChange($event)" matSortActive="CreatedAt"
+      matSortDirection="desc" matSortDisableClear>
+
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketId"> Ticket ID </th>
+        <td mat-cell *matCellDef="let element"> #{{element.ticketId}} </td>
       </ng-container>
 
+      <!-- Title Column -->
       <ng-container matColumnDef="title">
-        <th mat-header-cell *matHeaderCellDef>Title</th>
-        <td mat-cell *matCellDef="let t">{{ t.title }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="category">
-        <th mat-header-cell *matHeaderCellDef>Category</th>
-        <td mat-cell *matCellDef="let t">{{ t.category }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="priority">
-        <th mat-header-cell *matHeaderCellDef>Priority</th>
-        <td mat-cell *matCellDef="let t">{{ t.priority }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let t">{{ t.status }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="createdAt">
-        <th mat-header-cell *matHeaderCellDef>Created</th>
-        <td mat-cell *matCellDef="let t">
-          {{ t.createdAt | date:'short' }}
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="Title"> Title </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="ticket-title">{{element.title}}</span>
         </td>
       </ng-container>
 
+      <!-- Category Column -->
+      <ng-container matColumnDef="category">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketCategory.CategoryName"> Category </th>
+        <td mat-cell *matCellDef="let element"> {{element.category}} </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketStatus.StatusName"> Status </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="badge status" [ngClass]="getStatusClass(element.status)">
+            {{element.status}}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Priority Column -->
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="TicketPriority.PriorityName"> Priority </th>
+        <td mat-cell *matCellDef="let element">
+          <span class="badge priority" [ngClass]="getPriorityClass(element.priority)">
+            {{element.priority}}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- CreatedAt Column -->
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="CreatedAt"> Created </th>
+        <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'short'}} </td>
+      </ng-container>
+
+      <!-- Actions Column -->
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let t">
-          <button mat-button color="primary" (click)="viewDetails(t.ticketId)">
-            View Details
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="primary" (click)="viewDetails(element.ticketId)" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
           </button>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
-    <p *ngIf="!loading && tickets.length === 0" class="empty-text">
-      You have not created any tickets yet.
-    </p>
+    <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPageChange($event)" showFirstLastButtons>
+    </mat-paginator>
 
-  </mat-card>
+    <div *ngIf="!loading && tickets.length === 0" class="empty-state-table">
+      No tickets found.
+    </div>
+  </div>
 
 </div>

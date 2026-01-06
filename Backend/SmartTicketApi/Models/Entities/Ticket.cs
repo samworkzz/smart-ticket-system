@@ -11,6 +11,8 @@ namespace SmartTicketApi.Models.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public DateTime? AssignedAt { get; set; }
+        public DateTime? ResolvedAt { get; set; }
+        public string? ResolutionDetails { get; set; }
 
         public bool IsEscalated { get; set; }
 

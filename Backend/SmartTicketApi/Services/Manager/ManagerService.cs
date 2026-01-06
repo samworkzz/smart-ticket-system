@@ -3,6 +3,8 @@ using SmartTicketApi.Data;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.DTOs.Manager;
 using SmartTicketApi.Models.Entities;
+using SmartTicketApi.Extensions;
+using SmartTicketApi.Models.DTOs.Shared;
 
 namespace SmartTicketApi.Services.Manager
 {
@@ -41,12 +43,22 @@ namespace SmartTicketApi.Services.Manager
         // ==================================
         // 2️⃣ Get all unassigned tickets
         // ==================================
-        public async Task<List<UnassignedTicketDto>> GetUnassignedTicketsAsync()
+        // ==================================
+        // 2️⃣ Get all unassigned tickets
+        // ==================================
+        public async Task<PagedResponseDto<UnassignedTicketDto>> GetUnassignedTicketsAsync(PagedRequestDto pagination)
         {
-            var tickets = await _context.Tickets
-                .Where(t => t.AssignedToId == null)
+            var query = _context.Tickets
+                .AsNoTracking()
+                .Where(t => t.AssignedToId == null);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .Include(t => t.TicketCategory)
                 .Include(t => t.TicketPriority)
+                .ApplySorting(pagination.SortBy, pagination.SortDescending)
+                .ApplyPaging(pagination.PageNumber, pagination.PageSize)
                 .Select(t => new UnassignedTicketDto
                 {
                     TicketId = t.TicketId,
@@ -57,7 +69,7 @@ namespace SmartTicketApi.Services.Manager
                 })
                 .ToListAsync();
 
-            return tickets;
+            return new PagedResponseDto<UnassignedTicketDto>(items, totalCount, pagination.PageNumber, pagination.PageSize);
         }
 
         // ================================

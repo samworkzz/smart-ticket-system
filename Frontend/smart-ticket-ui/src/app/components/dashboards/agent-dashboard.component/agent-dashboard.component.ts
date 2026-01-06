@@ -1,37 +1,89 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TicketService } from '../../../services/ticket.service';
-import { AssignedTicket, TicketStatus } from '../../../models/agent.models';
-import { Router } from '@angular/router';
-
-import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { PagedRequest } from '../../../models/shared.models';
 
 @Component({
   selector: 'app-agent-dashboard',
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatTooltipModule
   ],
   templateUrl: './agent-dashboard.component.html',
   styleUrls: ['./agent-dashboard.component.css']
 })
 export class AgentDashboardComponent implements OnInit {
 
-  tickets: AssignedTicket[] = [];
-  isLoading = true;
+  tickets: any[] = [];
+  isLoading = false;
 
-  constructor(private ticketService: TicketService, private router: Router) { }
+  totalCount = 0;
+  pageSize = 10;
+  pageIndex = 0;
+  sortBy = 'CreatedAt';
+  sortDescending = true;
+
+  displayedColumns: string[] = ['id', 'title', 'category', 'priority', 'status', 'createdAt', 'actions'];
+
+  constructor(
+    private ticketService: TicketService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
+    this.loadAssignedTickets();
+  }
+
+  loadAssignedTickets(): void {
+    this.isLoading = true;
+
+    const request: PagedRequest = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.sortBy,
+      sortDescending: this.sortDescending
+    };
+
+    this.ticketService.getAssignedTickets(request).subscribe({
+      next: (data) => {
+        this.tickets = data.items;
+        this.totalCount = data.totalCount;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error('Failed to load tickets', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadAssignedTickets();
+  }
+
+  onSortChange(sort: Sort): void {
+    this.sortBy = sort.active;
+    this.sortDescending = sort.direction === 'desc';
     this.loadAssignedTickets();
   }
 
@@ -39,40 +91,34 @@ export class AgentDashboardComponent implements OnInit {
     this.router.navigate(['/ticket', ticketId]);
   }
 
-  loadAssignedTickets(): void {
-    this.isLoading = true;
-    this.ticketService.getAssignedTickets().subscribe({
-      next: (data) => {
-        this.tickets = data;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Failed to load tickets', err);
-        this.isLoading = false;
-      }
-    });
-  }
-
   startWork(ticketId: number): void {
-    this.updateStatus(ticketId, TicketStatus.InProgress);
-  }
-
-  closeTicket(ticketId: number): void {
-    if (!confirm('Are you sure you want to close this ticket? This will notify the user and managers.')) return;
-    this.updateStatus(ticketId, TicketStatus.Closed);
-  }
-
-  private updateStatus(ticketId: number, statusId: number): void {
-    this.isLoading = true; // Simple global loading for now
-    this.ticketService.updateStatus(ticketId, statusId).subscribe({
+    this.ticketService.updateStatus(ticketId, 4).subscribe({ // 4 = In Progress
       next: () => {
-        this.loadAssignedTickets(); // Reload to refresh UI
+        this.loadAssignedTickets();
+        // optionally show toast
       },
-      error: (err) => {
-        alert('Failed to update status: ' + err.message);
-        this.isLoading = false;
-      }
+      error: (err: any) => alert('Failed to start work')
     });
+  }
+
+  resolveTicket(ticketId: number): void {
+    this.ticketService.updateStatus(ticketId, 5).subscribe({ // 5 = Resolved
+      next: () => {
+        this.loadAssignedTickets();
+        // optionally show toast
+      },
+      error: (err: any) => alert('Failed to resolve ticket')
+    });
+  }
+
+  getStatusClass(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'assigned': return 'status-assigned';
+      case 'in progress': return 'status-in-progress';
+      case 'resolved': return 'status-resolved';
+      case 'closed': return 'status-closed';
+      default: return 'status-default';
+    }
   }
 
   getPriorityClass(priority: string): string {
@@ -80,12 +126,7 @@ export class AgentDashboardComponent implements OnInit {
       case 'high': return 'priority-high';
       case 'medium': return 'priority-medium';
       case 'low': return 'priority-low';
-      default: return '';
+      default: return 'priority-default';
     }
-  }
-
-  getStatusClass(status: string): string {
-    // Backend returns string like "In Progress", "Closed"
-    return status.replace(/\s+/g, '-').toLowerCase();
   }
 }

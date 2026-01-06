@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartTicketApi.Models.DTOs.Admin;
+using SmartTicketApi.Models.DTOs.Shared;
 using SmartTicketApi.Services.Admin;
 
 namespace SmartTicketApi.Controllers
@@ -68,5 +70,19 @@ namespace SmartTicketApi.Controllers
             await _adminService.UpdateSLAAsync(id, responseHours);
             return Ok(new { Message = "SLA updated" });
         }
+
+        // --- User Management ---
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers([FromQuery] PagedRequestDto pagination) => Ok(await _adminService.GetUsersWithRolesAsync(pagination));
+
+        [HttpPut("users/role")]
+        public async Task<IActionResult> UpdateUserRole([FromBody] UpdateUserRoleDto dto)
+        {
+            await _adminService.UpdateUserRoleAsync(dto);
+            return Ok(new { Message = "User role updated successfully" });
+        }
+
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles() => Ok(await _adminService.GetRolesAsync());
     }
 }

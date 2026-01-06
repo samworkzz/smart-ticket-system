@@ -9,5 +9,7 @@ namespace SmartTicketApi.Models.DTOs.Agent
 
         [Required]
         public int TicketStatusId { get; set; }
+
+        public string? ResolutionDetails { get; set; }
     }
 }

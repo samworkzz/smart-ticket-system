@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ManagerService } from '../../../services/manager.service';
+import { TicketService } from '../../../services/ticket.service';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -10,7 +11,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTabsModule } from '@angular/material/tabs';
 import { AgentWorkload, UnassignedTicket } from '../../../models/manager.models';
+import { PagedRequest } from '../../../models/shared.models';
 
 @Component({
   selector: 'app-manager-dashboard',
@@ -24,7 +30,11 @@ import { AgentWorkload, UnassignedTicket } from '../../../models/manager.models'
     MatButtonModule,
     MatProgressBarModule,
     MatIconModule,
-    MatListModule
+    MatListModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTooltipModule,
+    MatTabsModule
   ],
   templateUrl: './manager-dashboard.component.html',
   styleUrl: './manager-dashboard.component.css'
@@ -33,9 +43,24 @@ export class ManagerDashboardComponent implements OnInit {
 
   agents: AgentWorkload[] = [];
   unassignedTickets: UnassignedTicket[] = [];
+  resolvedTickets: any[] = []; // Tickets waiting for closure
   isLoading = false;
 
-  constructor(private managerService: ManagerService, private router: Router) { }
+  totalCount = 0;
+  pageSize = 10;
+  pageIndex = 0;
+  sortBy = 'CreatedAt';
+  sortDescending = true;
+
+  displayedColumns: string[] = ['id', 'title', 'category', 'priority', 'createdAt', 'assign', 'actions'];
+  resolvedColumns: string[] = ['id', 'title', 'category', 'priority', 'assignedTo', 'createdAt', 'actions'];
+
+  constructor(
+    private managerService: ManagerService,
+    private ticketService: TicketService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
@@ -47,22 +72,78 @@ export class ManagerDashboardComponent implements OnInit {
 
   loadData(): void {
     this.isLoading = true;
-    // Use forkJoin if RxJS is imported, or just separate calls for simplicity now
     this.managerService.getAgents().subscribe({
       next: (data) => this.agents = data,
       error: (err) => console.error('Failed to load agents', err)
     });
 
-    this.managerService.getUnassignedTickets().subscribe({
+    this.loadUnassignedTickets();
+    this.loadResolvedTickets();
+  }
+
+  loadResolvedTickets(): void {
+    this.ticketService.getAllTickets().subscribe({
       next: (data) => {
-        this.unassignedTickets = data;
+        // Filter for 'Resolved' status (Case insensitive check just in case)
+        this.resolvedTickets = data.filter(t => t.status?.toLowerCase() === 'resolved');
+        // Note: getAllTickets returns all, filtering client side. 
+        // For larger details, we'd want a backend filter endpoint.
+      },
+      error: (err) => console.error('Failed to load resolved tickets', err)
+    });
+  }
+
+  closeTicket(ticketId: number): void {
+    if (!confirm('Are you sure you want to CLOSE this ticket? This action is final.')) return;
+
+    this.isLoading = true;
+    // Assuming 6 is the ID for "Closed"
+    this.ticketService.updateStatus(ticketId, 6).subscribe({
+      next: () => {
+        this.loadResolvedTickets(); // Refresh list
         this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to close ticket', err);
+        this.isLoading = false;
+        alert('Failed to close ticket');
+      }
+    });
+  }
+
+  loadUnassignedTickets(): void {
+    const request: PagedRequest = {
+      pageNumber: this.pageIndex + 1,
+      pageSize: this.pageSize,
+      sortBy: this.sortBy,
+      sortDescending: this.sortDescending
+    };
+
+    this.managerService.getUnassignedTickets(request).subscribe({
+      next: (data) => {
+        this.unassignedTickets = data.items;
+        this.totalCount = data.totalCount;
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load tickets', err);
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadUnassignedTickets();
+  }
+
+  onSortChange(sort: Sort): void {
+    this.sortBy = sort.active;
+    this.sortDescending = sort.direction === 'desc';
+    this.loadUnassignedTickets();
   }
 
   assign(ticketId: number, agentId: number): void {
@@ -71,7 +152,8 @@ export class ManagerDashboardComponent implements OnInit {
     this.isLoading = true;
     this.managerService.assignTicket(ticketId, agentId).subscribe({
       next: () => {
-        this.loadData();
+        this.loadUnassignedTickets();
+        this.managerService.getAgents().subscribe(data => this.agents = data); // Refresh workload
         // Optional: Show success toast
       },
       error: (err) => {
@@ -84,11 +166,10 @@ export class ManagerDashboardComponent implements OnInit {
 
   getPriorityClass(priority: string): string {
     switch (priority?.toLowerCase()) {
-      case 'high': return 'badge-high';
-      case 'medium': return 'badge-medium';
-      case 'low': return 'badge-low';
-      default: return 'badge-default';
+      case 'high': return 'priority-high'; // Using global priority classes where possible
+      case 'medium': return 'priority-medium';
+      case 'low': return 'priority-low';
+      default: return 'priority-default';
     }
   }
 }
-
